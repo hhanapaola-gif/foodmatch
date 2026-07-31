@@ -1,0 +1,47 @@
+name: foodmatch-public
+
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
+      PRIVATE_SERVER_IP: ${PRIVATE_SERVER_IP:?set PRIVATE_SERVER_IP in .env}
+      MONITORING_SERVER_IP: ${MONITORING_SERVER_IP:?set MONITORING_SERVER_IP in .env}
+    volumes:
+      - ./nginx/templates:/etc/nginx/templates:ro
+      - ./nginx/www:/var/www/certbot:ro
+      - certbot-certs:/etc/letsencrypt:ro
+    restart: unless-stopped
+
+  # Exposed on the host so the monitoring server can scrape this box's
+  # metrics too — ufw/Security Group restricts the source IP, see
+  # infra/scripts/firewall-public.sh.
+  node-exporter:
+    image: prom/node-exporter:latest
+    pid: host
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --path.rootfs=/rootfs
+    restart: unless-stopped
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./nginx/www:/var/www/certbot
+      - certbot-certs:/etc/letsencrypt
+    entrypoint: >
+      sh -c "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done"
+    restart: unless-stopped
+
+volumes:
+  certbot-certs:

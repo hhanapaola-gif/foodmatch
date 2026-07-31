@@ -1,0 +1,29 @@
+# BOOTSTRAP CONFIG (HTTP only) — active until the first SSL cert is issued.
+# See infra/DEPLOYMENT.md step "Emitir certificado SSL": once certbot
+# succeeds, this file gets replaced by ssl.conf.template.disabled.
+server {
+    listen 80;
+    server_name ${DOMAIN};
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location /grafana/ {
+        proxy_pass http://${MONITORING_SERVER_IP}:3000/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location / {
+        proxy_pass http://${PRIVATE_SERVER_IP}:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 5s;
+        proxy_read_timeout 60s;
+    }
+}
