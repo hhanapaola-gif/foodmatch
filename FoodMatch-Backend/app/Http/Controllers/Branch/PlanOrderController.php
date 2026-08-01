@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Branch;
 
+use App\CentralLogics\CustomerLogic;
 use App\Http\Controllers\Controller;
 use App\Model\Plan;
 use App\Model\PlanOrder;
@@ -71,8 +72,14 @@ class PlanOrderController extends Controller
     public function updateStatus(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
         $request->validate(['status' => 'required|in:pending,confirmed,cancelled']);
-        $this->planOrder->whereIn('plan_id', $this->branchPlanIds())->findOrFail($id)
-            ->update(['status' => $request->status]);
+
+        $order = $this->planOrder->whereIn('plan_id', $this->branchPlanIds())->findOrFail($id);
+        $wasCancelled = $order->status === 'cancelled';
+        $order->update(['status' => $request->status]);
+
+        if ($request->status === 'cancelled' && !$wasCancelled) {
+            CustomerLogic::create_wallet_transaction($order->user_id, $order->total_price, 'order_refund', 'Reembolso pedido #' . $order->id);
+        }
 
         return back()->with('success', 'Estado actualizado correctamente.');
     }

@@ -6,6 +6,7 @@ use App\Model\Branch;
 use App\Model\ChefBranch;
 use App\Model\CustomerAddress;
 use App\Model\Order;
+use App\Model\PlanOrder;
 use App\Model\Wishlist;
 use App\Models\ReferralCustomer;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -55,6 +56,11 @@ class User extends Authenticatable
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class, 'user_id');
+    }
+
+    public function planOrders(): HasMany
+    {
+        return $this->hasMany(PlanOrder::class, 'user_id');
     }
 
     public function addresses(): HasMany

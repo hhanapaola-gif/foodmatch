@@ -30,7 +30,7 @@ class CustomerLogic{
         $debit = 0.0;
         $credit = 0.0;
 
-        if(in_array($transaction_type, ['add_fund_by_admin','add_fund','loyalty_point', 'referrer','add_fund_bonus']))
+        if(in_array($transaction_type, ['add_fund_by_admin','add_fund','loyalty_point', 'referrer','add_fund_bonus','order_refund','signup_bonus']))
         {
             $credit = $amount;
 
@@ -56,7 +56,7 @@ class CustomerLogic{
             $user->save();
             $wallet_transaction->save();
             DB::commit();
-            if(in_array($transaction_type, ['loyalty_point','order_place','add_fund_by_admin', 'referrer', 'add_fund', 'add_fund_bonus'])) return $wallet_transaction;
+            if(in_array($transaction_type, ['loyalty_point','order_place','add_fund_by_admin', 'referrer', 'add_fund', 'add_fund_bonus', 'order_refund', 'signup_bonus'])) return $wallet_transaction;
             return true;
         }catch(\Exception $ex)
         {

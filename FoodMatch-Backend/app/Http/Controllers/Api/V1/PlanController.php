@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\CentralLogics\CustomerLogic;
 use App\CentralLogics\Helpers;
 use App\Http\Controllers\Controller;
 use App\Model\Plan;
@@ -130,6 +131,7 @@ class PlanController extends Controller
             'meals.*'         => 'in:breakfast,lunch,dinner',
             'address'         => 'nullable|string|max:500',
             'notes'           => 'nullable|string|max:1000',
+            'payment_method'  => 'nullable|in:wallet,card,cash',
         ]);
 
         // ── Next-Monday guard ────────────────────────────────────────────────
@@ -157,24 +159,41 @@ class PlanController extends Controller
             $weeklyPrice += ($mealPrices[$meal] ?? 0) * $dayCount;
         }
         // Monthly plans span 4 weeks; multiply weekly price accordingly.
-        $totalPrice = $plan->type === 'monthly' ? $weeklyPrice * 4 : $weeklyPrice;
+        $totalPrice = round($plan->type === 'monthly' ? $weeklyPrice * 4 : $weeklyPrice, 2);
+
+        // ── Wallet payment guard ─────────────────────────────────────────────
+        $paymentMethod = $request->input('payment_method', 'demo');
+        $userId        = auth('api')->id();
+
+        if ($paymentMethod === 'wallet') {
+            $wallet_balance = auth('api')->user()->wallet_balance;
+            if ($wallet_balance < $totalPrice) {
+                return response()->json([
+                    'message' => translate('Saldo insuficiente en el monedero.'),
+                ], 422);
+            }
+        }
 
         // ── Day abbreviation → integer map ───────────────────────────────────
         $dayMap = ['mon' => 1, 'tue' => 2, 'wed' => 3, 'thu' => 4, 'fri' => 5, 'sat' => 6, 'sun' => 7];
 
         // ── Persist order ────────────────────────────────────────────────────
         $planOrder = $this->planOrder->create([
-            'user_id'        => auth('api')->id(),
+            'user_id'        => $userId,
             'plan_id'        => $plan->id,
             'start_date'     => $startDate->toDateString(),
             'status'         => 'confirmed',     // demo: instantly confirmed
             'payment_status' => 'paid',          // demo: payment simulated
-            'payment_method' => 'demo',
-            'total_price'    => round($totalPrice, 2),
+            'payment_method' => $paymentMethod,
+            'total_price'    => $totalPrice,
             'selected_days'  => $request->selected_days,
             'address'        => $request->input('address'),
             'notes'          => $request->input('notes'),
         ]);
+
+        if ($paymentMethod === 'wallet') {
+            CustomerLogic::create_wallet_transaction($userId, $totalPrice, 'order_place', 'Pago pedido #' . $planOrder->id);
+        }
 
         // ── Persist details (one row per day × meal) ─────────────────────────
         $details = [];
@@ -236,6 +255,47 @@ class PlanController extends Controller
             ]);
 
         return response()->json(['orders' => $orders], 200);
+    }
+
+    /**
+     * Cancel the authenticated user's own plan order.
+     *
+     * PUT /api/v1/user/plan-orders/{id}/cancel
+     *
+     * Only allowed while the order is still 'confirmed' and hasn't started yet.
+     */
+    public function cancelOrder(int $id): JsonResponse
+    {
+        $planOrder = $this->planOrder
+            ->where('user_id', auth('api')->id())
+            ->find($id);
+
+        if (!$planOrder) {
+            return response()->json(['message' => translate('plan_order_not_found')], 404);
+        }
+
+        if ($planOrder->status !== 'confirmed') {
+            return response()->json(['message' => translate('Este pedido ya no se puede cancelar.')], 403);
+        }
+
+        if (Carbon::today('UTC')->gte($planOrder->start_date)) {
+            return response()->json(['message' => translate('Este pedido ya comenzó y no se puede cancelar.')], 403);
+        }
+
+        $planOrder->update(['status' => 'cancelled']);
+
+        CustomerLogic::create_wallet_transaction(
+            $planOrder->user_id,
+            $planOrder->total_price,
+            'order_refund',
+            'Reembolso pedido #' . $planOrder->id
+        );
+
+        return response()->json([
+            'order_id' => $planOrder->id,
+            'status'   => $planOrder->status,
+            'message'  => translate('Pedido cancelado correctamente'),
+        ], 200);
     }
 
     /**

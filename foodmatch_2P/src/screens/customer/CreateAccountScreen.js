@@ -15,7 +15,7 @@ const schema = z.object({
   firstName: z.string().min(1, 'Ingresa tu nombre'),
   lastName: z.string().min(1, 'Ingresa tu apellido'),
   email: z.string().email('Correo inválido'),
-  phone: z.string().min(6, 'Teléfono inválido'),
+  phone: z.string().regex(/^[0-9]{10}$/, 'El teléfono debe tener 10 dígitos'),
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
 });
 
@@ -84,7 +84,7 @@ export default function CreateAccountScreen({ navigation }) {
           keyboardType: 'email-address',
           autoCapitalize: 'none',
         })}
-        {field('phone', 'Teléfono', 'call-outline', { placeholder: '+52 55 0000 0000', keyboardType: 'phone-pad' })}
+        {field('phone', 'Teléfono', 'call-outline', { placeholder: '5500000000', keyboardType: 'number-pad', maxLength: 10 })}
         {field('password', 'Contraseña', 'lock-closed-outline', { placeholder: '••••••••', secureTextEntry: true })}
 
         <Button title="Crear cuenta" onPress={handleSubmit(onSubmit)} loading={submitting} style={styles.button} />

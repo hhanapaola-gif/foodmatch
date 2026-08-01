@@ -18,7 +18,7 @@ import { getCurrentAddress } from '../../utils/location';
 const schema = z.object({
   label: z.string().min(1, 'Dale un nombre a esta dirección (ej. Casa)'),
   contactName: z.string().min(1, 'Ingresa el nombre de contacto'),
-  contactPhone: z.string().min(6, 'Teléfono inválido'),
+  contactPhone: z.string().regex(/^[0-9]{10}$/, 'El teléfono debe tener 10 dígitos'),
   address: z.string().min(5, 'Ingresa la dirección completa'),
 });
 
@@ -123,7 +123,7 @@ export default function AddressScreen({ navigation }) {
             control={control}
             name="contactPhone"
             render={({ field: { onChange, value } }) => (
-              <Input label="Teléfono de contacto" keyboardType="phone-pad" value={value} onChangeText={onChange} style={styles.field} />
+              <Input label="Teléfono de contacto" keyboardType="number-pad" maxLength={10} value={value} onChangeText={onChange} style={styles.field} />
             )}
           />
           {!!errors.contactPhone && <Text style={styles.fieldError}>{errors.contactPhone.message}</Text>}

@@ -88,10 +88,10 @@
                                 </td>
                                 <td>
                                     <label class="badge badge-soft-info py-1 px-5 mb-0">
-                                        {{$customer->orders->count()}}
+                                        {{$customer->orders->count() + $customer->planOrders->count()}}
                                     </label>
                                 </td>
-                                <td>{{$customer->orders->sum('order_amount')}}</td>
+                                <td>{{$customer->orders->sum('order_amount') + $customer->planOrders->sum('total_price')}}</td>
                                 <td class="show-point-{{$customer['id']}}-table">
                                     {{$customer['point']}}
                                 </td>

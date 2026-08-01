@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Header from '../../components/customer/Header';
@@ -9,20 +9,33 @@ import { customerColors, customerFonts, customerFontSizes, customerRadii } from 
 import { useCart } from '../../context/customer/CartContext';
 import { subscribeToPlan } from '../../api/plans';
 import { extractErrorMessage } from '../../api/client';
+import { getCustomerInfo } from '../../api/customer';
 import { nextMonday, toISODate, formatDateEs } from '../../utils/plan';
 
 export default function PaymentScreen({ navigation, route }) {
   const { addressText, paymentMethod = 'cash' } = route.params || {};
-  const { items, removeFromCart } = useCart();
+  const { items, subtotal, removeFromCart } = useCart();
   const [cardNumber, setCardNumber] = useState('');
   const [expiry, setExpiry] = useState('');
   const [cvv, setCvv] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
+  const [walletBalance, setWalletBalance] = useState(null);
 
   const startDate = toISODate(nextMonday());
   const isCard = paymentMethod === 'card';
+  const isWallet = paymentMethod === 'wallet';
+
+  useEffect(() => {
+    if (isWallet) {
+      getCustomerInfo()
+        .then((info) => setWalletBalance(Number(info?.wallet_balance || 0)))
+        .catch(() => setWalletBalance(0));
+    }
+  }, [isWallet]);
+
+  const insufficientWallet = isWallet && walletBalance !== null && walletBalance < subtotal;
 
   const CARD_DIGITS = 16;
 
@@ -68,8 +81,11 @@ export default function PaymentScreen({ navigation, route }) {
     return Object.keys(errs).length === 0;
   };
 
+  const paymentLabel = isCard ? 'Tarjeta' : isWallet ? 'Monedero' : 'Efectivo';
+
   const handlePay = async () => {
     if (isCard && !validateCard()) return;
+    if (insufficientWallet) return;
 
     setProcessing(true);
     setError('');
@@ -81,7 +97,8 @@ export default function PaymentScreen({ navigation, route }) {
           selectedDays: item.config.selectedDays,
           meals: item.config.meals,
           address: addressText,
-          notes: `Método de pago: ${isCard ? 'Tarjeta' : 'Efectivo'}`,
+          notes: `Método de pago: ${paymentLabel}`,
+          paymentMethod,
         }).then(() => item.plan.id)
       )
     );
@@ -154,6 +171,21 @@ export default function PaymentScreen({ navigation, route }) {
               Este es un pago de demostración: el pedido se confirma directamente en el servidor sin cargar una tarjeta real.
             </Text>
           </>
+        ) : isWallet ? (
+          <View style={styles.cashCard}>
+            <Ionicons name="wallet-outline" size={28} color={customerColors.primary} />
+            {walletBalance === null ? (
+              <ActivityIndicator color={customerColors.primary} style={{ marginLeft: 14 }} />
+            ) : (
+              <View style={{ flex: 1, marginLeft: 14 }}>
+                <Text style={styles.cashText}>Saldo disponible: ${walletBalance.toFixed(2)}</Text>
+                <Text style={styles.cashText}>Total a pagar: ${subtotal.toFixed(2)}</Text>
+                {insufficientWallet && (
+                  <Text style={[styles.fieldError, { marginTop: 4 }]}>Saldo insuficiente para pagar con el monedero.</Text>
+                )}
+              </View>
+            )}
+          </View>
         ) : (
           <View style={styles.cashCard}>
             <Ionicons name="cash-outline" size={28} color={customerColors.primary} />
@@ -165,7 +197,12 @@ export default function PaymentScreen({ navigation, route }) {
       </ScrollView>
       <View style={styles.footer}>
         <View style={styles.footerWrapper}>
-          <Button title="Confirmar suscripción" onPress={handlePay} loading={processing} disabled={items.length === 0} />
+          <Button
+            title="Confirmar suscripción"
+            onPress={handlePay}
+            loading={processing}
+            disabled={items.length === 0 || insufficientWallet || (isWallet && walletBalance === null)}
+          />
         </View>
       </View>
     </SafeAreaView>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
+use App\CentralLogics\CustomerLogic;
 use App\CentralLogics\Helpers;
 use App\CentralLogics\SMSModule;
 use App\Http\Controllers\Controller;
@@ -77,6 +78,8 @@ class CustomerAuthController extends Controller
             'refer_by' => $refer_user?->id ?? null,
             'language_code' => $request->header('X-localization') ?? 'en',
         ]);
+
+        CustomerLogic::create_wallet_transaction($user->id, 100, 'signup_bonus', 'Bono de bienvenida');
 
         $referralData = $this->businessSetting
             ->where('key', 'like', 'ref_earning_status')

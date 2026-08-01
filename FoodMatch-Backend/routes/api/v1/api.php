@@ -146,6 +146,7 @@ Route::group(['namespace' => 'Api\V1', 'middleware' => 'localization'], function
     Route::get('restaurants/{id}/plans', [PlanController::class, 'plansByRestaurant']);
 
     Route::get('user/plan-orders', [PlanController::class, 'userOrders'])->middleware(['auth:api', 'is_active']);
+    Route::put('user/plan-orders/{id}/cancel', [PlanController::class, 'cancelOrder'])->middleware(['auth:api', 'is_active']);
 
     Route::get('plan-categories', [PlanCategoryController::class, 'index']);
 

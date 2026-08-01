@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Model\Conversation;
 use App\Model\Newsletter;
 use App\Model\Order;
+use App\Model\PlanOrder;
 use App\Model\PointTransitions;
 use App\Model\BusinessSetting;
 use App\User;
@@ -30,6 +31,7 @@ class CustomerController extends Controller
         private User             $customer,
         private PointTransitions $pointTransitions,
         private Order            $order,
+        private PlanOrder        $planOrder,
         private Newsletter       $newsletter,
         private Conversation     $conversation,
         private BusinessSetting  $businessSetting
@@ -110,7 +112,7 @@ class CustomerController extends Controller
             $customers = $this->customer;
         }
 
-        $customers = $customers->with(['orders'])->where('user_type', null)->latest()->paginate(Helpers::getPagination())->appends($queryParam);
+        $customers = $customers->with(['orders', 'planOrders'])->where('user_type', null)->latest()->paginate(Helpers::getPagination())->appends($queryParam);
         return view('admin-views.customer.list', compact('customers', 'search'));
     }
 
@@ -139,7 +141,10 @@ class CustomerController extends Controller
             ->paginate(Helpers::getPagination())
             ->appends(['search' => $search]);
 
-        return view('admin-views.customer.customer-view', compact('customer', 'orders', 'search'));
+        $planOrders = $this->planOrder->with('plan')->latest()->where(['user_id' => $id])
+            ->paginate(Helpers::getPagination(), ['*'], 'plan_page');
+
+        return view('admin-views.customer.customer-view', compact('customer', 'orders', 'planOrders', 'search'));
     }
 
     /**

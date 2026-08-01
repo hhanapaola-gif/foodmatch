@@ -16,6 +16,7 @@ const mealLabel = (code) => MEALS.find((m) => m.code === code)?.label || code;
 const PAYMENT_METHODS = [
   { id: 'cash', label: 'Efectivo', icon: 'cash-outline' },
   { id: 'card', label: 'Tarjeta', icon: 'card-outline' },
+  { id: 'wallet', label: 'Monedero', icon: 'wallet-outline' },
 ];
 
 export default function CheckoutScreen({ navigation }) {

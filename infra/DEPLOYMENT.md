@@ -107,7 +107,22 @@ nano .env   # define contraseñas reales de DB_PASSWORD, DB_ROOT_PASSWORD,
 docker compose up -d --build
 docker compose ps   # confirma que app1, app2, web1, web2, lb, mysql, redis,
                      # node-exporter, mysqld-exporter estén "healthy"/"running"
+
+# PASO OBLIGATORIO la primera vez: una BD recién migrada (php artisan migrate,
+# que ya corrió arriba dentro del contenedor) NO trae configuración base —
+# business_settings y currencies quedan vacías, lo que rompe /api/v1/config,
+# login, registro y casi cualquier endpoint real con 500 (confirmado en una
+# validación local: ver seed-business-config.sql para el detalle exacto).
+# Este dump se generó a partir del entorno local ya funcional; solo trae
+# configuración (moneda, textos del negocio, flags de pasarelas de pago
+# desactivadas), no usuarios ni datos de prueba. Es seguro re-ejecutarlo
+# (usa INSERT IGNORE).
+docker exec -i $(docker compose ps -q mysql) mysql -u"$DB_USERNAME" -p"$DB_PASSWORD" "$DB_DATABASE" < mysql/seed-business-config.sql
 ```
+
+> Nota: la creación del cliente personal de Passport (necesario para que
+> login/registro emitan tokens) ya la hace `entrypoint.sh` automáticamente
+> en el primer arranque — no requiere un paso manual aparte.
 
 > Nota APP_KEY: si no tienes PHP instalado en tu máquina, corre
 > `docker run --rm -v ${PWD}:/app -w /app php:8.2-cli php artisan key:generate --show`

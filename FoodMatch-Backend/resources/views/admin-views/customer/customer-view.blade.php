@@ -128,6 +128,59 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="card mt-3">
+                    <div class="card-top px-card pt-4">
+                        <h5 class="d-flex gap-2 align-items-center">
+                            {{translate('Plan Orders')}}
+                            <span class="badge badge-soft-dark rounded-50 fz-12">{{ $planOrders->total() }}</span>
+                        </h5>
+                    </div>
+
+                    <div class="py-3">
+                        <div class="table-responsive datatable-custom">
+                            <table class="table table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>{{translate('SL')}}</th>
+                                        <th class="text-center">{{translate('order_ID')}}</th>
+                                        <th>{{translate('Plan')}}</th>
+                                        <th class="text-center">{{translate('status')}}</th>
+                                        <th class="text-center">{{translate('total_Amount')}}</th>
+                                        <th class="text-center">{{translate('action')}}</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                @foreach($planOrders as $key=>$planOrder)
+                                    <tr>
+                                        <td>{{$planOrders->firstItem() + $key}}</td>
+                                        <td class="table-column-pl-0 text-center">
+                                            <a class="text-dark" href="{{route('admin.plan-order.show',['id'=>$planOrder['id']])}}">{{$planOrder['id']}}</a>
+                                        </td>
+                                        <td>{{$planOrder->plan?->title}}</td>
+                                        <td class="text-center">{{ucfirst($planOrder['status'])}}</td>
+                                        <td class="text-center">{{ Helpers::set_symbol($planOrder['total_price']) }}</td>
+                                        <td>
+                                            <div class="d-flex justify-content-center gap-2">
+                                                <a class="btn btn-outline-success btn-sm square-btn"
+                                                href="{{route('admin.plan-order.show',['id'=>$planOrder['id']])}}"><i
+                                                        class="tio-visible"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive px-3">
+                        <div class="d-flex justify-content-lg-end">
+                            {!! $planOrders->links() !!}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="col-lg-4">
@@ -148,7 +201,7 @@
                                 <div class="media-body d-flex flex-column gap-1">
                                     <div class="text-dark d-flex gap-2 align-items-center"><span class="tio-email"></span> <a class="text-dark" href="mailto:{{$customer['email']}}">{{$customer['email']}}</a></div>
                                     <div class="text-dark d-flex gap-2 align-items-center"><span class="tio-call-talking-quiet"></span> <a class="text-dark" href="tel:{{$customer['phone']}}">{{$customer['phone']}}</a></div>
-                                    <div class="text-dark d-flex gap-2 align-items-center"><span class="tio-shopping-basket-outlined"></span> {{$customer->orders->count()}} {{translate('orders')}}</div>
+                                    <div class="text-dark d-flex gap-2 align-items-center"><span class="tio-shopping-basket-outlined"></span> {{$customer->orders->count() + $customer->planOrders->count()}} {{translate('orders')}}</div>
                                 </div>
                             </div>
                         </div>

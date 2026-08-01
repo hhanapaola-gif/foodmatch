@@ -115,7 +115,10 @@ services:
     restart: unless-stopped
 
   mysqld-exporter:
-    image: prom/mysqld-exporter:latest
+    # Pinned: v0.15+ dropped DATA_SOURCE_NAME env var support in favor of a
+    # --config.my-cnf file, which broke this service under :latest (confirmed
+    # in pre-deploy validation). v0.14.0 is the last version reading DSN from env.
+    image: prom/mysqld-exporter:v0.14.0
     ports:
       - "9104:9104"
     environment:

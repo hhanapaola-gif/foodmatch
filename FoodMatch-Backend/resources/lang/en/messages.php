@@ -3191,4 +3191,12 @@
   'saved_plans' => 'Saved plans',
   ' send a message' => ' send a message',
   'Plan category removed!' => 'Plan category removed!',
+  'Pedido cancelado correctamente' => 'Pedido cancelado correctamente',
+  'Este pedido ya no se puede cancelar.' => 'Este pedido ya no se puede cancelar.',
+  'plan_order_not_found' => 'Plan order not found',
+  'Los planes solo pueden comenzar desde la próxima semana.' => 'Los planes solo pueden comenzar desde la próxima semana.',
+  'Saldo insuficiente en el monedero.' => 'Saldo insuficiente en el monedero.',
+  'first_name_required' => 'First name required',
+  'last_name_required' => 'Last name required',
+  'plan_not_found' => 'Plan not found',
 );

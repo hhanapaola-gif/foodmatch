@@ -12,7 +12,7 @@ export const listPlansByRestaurant = (branchId) =>
 
 // start_date must be an ISO "YYYY-MM-DD" string on/after next Monday.
 // selectedDays: ['mon','tue',...]  meals: ['breakfast','lunch','dinner']
-export const subscribeToPlan = (planId, { startDate, selectedDays, meals, address, notes }) =>
+export const subscribeToPlan = (planId, { startDate, selectedDays, meals, address, notes, paymentMethod }) =>
   client
     .post(`/plans/${planId}/order`, {
       start_date: startDate,
@@ -20,11 +20,15 @@ export const subscribeToPlan = (planId, { startDate, selectedDays, meals, addres
       meals,
       address,
       notes,
+      payment_method: paymentMethod,
     })
     .then((res) => res.data);
 
 export const listMyPlanOrders = (status) =>
   client.get('/user/plan-orders', { params: { status } }).then((res) => res.data);
+
+export const cancelPlanOrder = (id) =>
+  client.put(`/user/plan-orders/${id}/cancel`).then((res) => res.data);
 
 export const listPlanCategories = () => client.get('/plan-categories').then((res) => res.data);
 
