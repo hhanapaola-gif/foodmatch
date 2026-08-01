@@ -1,0 +1,16 @@
+{
+    auto_https off
+}
+
+:{$PORT} {
+    root * /app/public
+
+    # Serve existing static files directly — bypasses PHP entirely
+    @static file
+    handle @static {
+        file_server
+    }
+
+    # Everything else goes through PHP (Laravel index.php)
+    php_server
+}

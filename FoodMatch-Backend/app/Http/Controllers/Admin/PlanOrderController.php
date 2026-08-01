@@ -1,0 +1,70 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Model\Plan;
+use App\Model\PlanOrder;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Contracts\Support\Renderable;
+
+class PlanOrderController extends Controller
+{
+    public function __construct(private PlanOrder $planOrder) {}
+
+    public function index(Request $request): Renderable
+    {
+        $search = $request->search;
+        $status = $request->status;
+        $planId = $request->plan_id;
+        $from   = $request->from   ? Carbon::parse($request->from)->startOfDay()  : null;
+        $to     = $request->to     ? Carbon::parse($request->to)->endOfDay()      : null;
+
+        $orders = $this->planOrder
+            ->with(['plan', 'plan.category', 'customer'])
+            ->when($status, fn ($q) => $q->where('status', $status))
+            ->when($planId, fn ($q) => $q->where('plan_id', $planId))
+            ->when($from && $to, fn ($q) => $q->whereBetween('created_at', [$from, $to]))
+            ->when($search, function ($q) use ($search) {
+                $q->where('id', 'like', "%$search%")
+                  ->orWhere('user_id', 'like', "%$search%")
+                  ->orWhereHas('customer', fn ($u) =>
+                      $u->where('f_name', 'like', "%$search%")
+                        ->orWhere('l_name', 'like', "%$search%")
+                        ->orWhere('phone', 'like', "%$search%")
+                  );
+            })
+            ->latest()
+            ->paginate(20)
+            ->appends($request->only(['search', 'status', 'plan_id', 'from', 'to']));
+
+        $counts = [
+            'all'       => $this->planOrder->count(),
+            'pending'   => $this->planOrder->where('status', 'pending')->count(),
+            'confirmed' => $this->planOrder->where('status', 'confirmed')->count(),
+            'cancelled' => $this->planOrder->where('status', 'cancelled')->count(),
+        ];
+
+        $plans = Plan::orderBy('title')->get(['id', 'title']);
+
+        return view('admin-views.plan-order.list', compact('orders', 'search', 'status', 'planId', 'plans', 'counts', 'from', 'to'));
+    }
+
+    public function show(int $id): Renderable
+    {
+        $order = $this->planOrder
+            ->with(['plan', 'plan.category', 'customer', 'details'])
+            ->findOrFail($id);
+
+        return view('admin-views.plan-order.show', compact('order'));
+    }
+
+    public function updateStatus(Request $request, int $id): \Illuminate\Http\RedirectResponse
+    {
+        $request->validate(['status' => 'required|in:pending,confirmed,cancelled']);
+        $this->planOrder->findOrFail($id)->update(['status' => $request->status]);
+
+        return back()->with('success', 'Estado actualizado correctamente.');
+    }
+}

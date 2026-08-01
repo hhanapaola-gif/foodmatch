@@ -1,0 +1,39 @@
+# Railway Nixpacks configuration for FoodMatch Laravel backend
+# PHP 8.2 + all extensions required by composer.json dependencies
+
+[phases.setup]
+nixPkgs = [
+  "php82",
+  "php82Extensions.pdo",
+  "php82Extensions.mysqlnd",
+  "php82Extensions.pdo_mysql",
+  "php82Extensions.gd",
+  "php82Extensions.mbstring",
+  "php82Extensions.xml",
+  "php82Extensions.zip",
+  "php82Extensions.curl",
+  "php82Extensions.fileinfo",
+  "php82Extensions.tokenizer",
+  "php82Extensions.bcmath",
+  "php82Extensions.intl",
+  "php82Extensions.opcache"
+]
+
+[phases.install]
+cmds = [
+  "install-php-extensions pdo_mysql",
+  "mkdir -p database/seeds database/factories",
+  "composer install --no-dev --optimize-autoloader"
+]
+
+[phases.build]
+cmds = [
+  "mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache storage/logs bootstrap/cache",
+  "chmod -R 775 storage bootstrap/cache",
+  "php artisan storage:link --force",
+  "php artisan migrate --force",
+  "php artisan db:seed --force"
+]
+
+[start]
+cmd = "mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache/data storage/logs storage/app/public && frankenphp run --config /app/Caddyfile"

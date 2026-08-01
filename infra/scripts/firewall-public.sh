@@ -56,6 +56,7 @@ OUT=/var/log/node-exporter/fail2ban.prom.$$
         echo "fail2ban_banned_current{jail=\"$jail\"} ${count:-0}"
     done
 } > "$OUT"
+chmod 644 "$OUT"
 mv "$OUT" /var/log/node-exporter/fail2ban.prom
 EOF
 chmod +x /usr/local/bin/fail2ban-metrics.sh

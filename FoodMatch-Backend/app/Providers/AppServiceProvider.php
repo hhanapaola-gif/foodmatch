@@ -1,0 +1,86 @@
+<?php
+
+namespace App\Providers;
+
+use App\Model\BusinessSetting;
+use App\Model\Category;
+use App\Models\LoginSetup;
+use App\Observers\BusinessSettingObserver;
+use App\Observers\CategoryObserver;
+use App\Observers\LoginSetupObserver;
+use App\Traits\SystemAddonTrait;
+use Illuminate\Foundation\AliasLoader;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Pagination\Paginator;
+use Barryvdh\DomPDF\PDF;
+use App\CentralLogics\Helpers;
+use Nwidart\Modules\Facades\Module;
+
+ini_set('memory_limit', '-1');
+
+class AppServiceProvider extends ServiceProvider
+{
+    use SystemAddonTrait;
+
+    /**
+     * Register any application services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        require_once base_path('config/constant.php');
+
+        $this->registerAliases(
+            [
+                'PDF' => PDF::class,
+                'Helpers' => Helpers::class,
+                'Module' => Module::class,
+            ]
+        );
+    }
+
+    /**
+     * Bootstrap any application services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        if (env('APP_ENV') === 'production') {
+            URL::forceScheme('https');
+        }
+
+        BusinessSetting::observe(BusinessSettingObserver::class);
+        LoginSetup::observe(LoginSetupObserver::class);
+        Category::observe(CategoryObserver::class);
+
+        //for system addon
+        Config::set('addon_admin_routes',$this->get_addon_admin_routes());
+        Config::set('get_payment_publish_status',$this->get_payment_publish_status());
+
+        try {
+            $timezone = BusinessSetting::where(['key' => 'time_zone'])->first();
+            if (isset($timezone)) {
+                config(['app.timezone' => $timezone->value]);
+                date_default_timezone_set($timezone->value);
+            }
+        }catch(\Exception $exception){}
+
+        Paginator::useBootstrap();
+    }
+
+
+    protected function registerAliases(array $aliases): void
+    {
+        $loader = AliasLoader::getInstance();
+
+        foreach ($aliases as $alias => $class) {
+            if (class_exists($class)) {
+                $loader->alias($alias, $class);
+            }
+        }
+    }
+}

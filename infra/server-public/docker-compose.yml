@@ -28,10 +28,12 @@ services:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /:/rootfs:ro
+      - /var/log:/host/varlog:ro
     command:
       - --path.procfs=/host/proc
       - --path.sysfs=/host/sys
       - --path.rootfs=/rootfs
+      - --collector.textfile.directory=/host/varlog/node-exporter
     restart: unless-stopped
 
   certbot:
