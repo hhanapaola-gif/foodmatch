@@ -39,7 +39,8 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-in
 COPY . .
 RUN composer dump-autoload --optimize --no-dev \
     && mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache \
-    && chown -R www-data:www-data storage bootstrap/cache resources/lang
+    && chown -R www-data:www-data storage bootstrap/cache resources/lang \
+    && ln -sf ../storage/app/public public/storage
 
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache-recommended.ini
 COPY docker/php/entrypoint.sh /usr/local/bin/entrypoint.sh

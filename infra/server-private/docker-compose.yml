@@ -37,6 +37,13 @@ services:
     build: *web-build
     environment:
       PHP_UPSTREAM: app1:9000
+    # Same shared volume as app1/app2: nginx serves /storage/* (uploaded
+    # images) directly as static files via the public/storage symlink baked
+    # into the image at build time. Without this mount, the symlink target
+    # doesn't exist in this container and every uploaded image 404s even
+    # though the DB/API correctly point to it (confirmed in the real deploy).
+    volumes:
+      - storage:/var/www/html/storage
     depends_on:
       - app1
     restart: unless-stopped
@@ -60,6 +67,8 @@ services:
     build: *web-build
     environment:
       PHP_UPSTREAM: app2:9000
+    volumes:
+      - storage:/var/www/html/storage
     depends_on:
       - app2
     restart: unless-stopped
