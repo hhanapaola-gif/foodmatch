@@ -65,7 +65,12 @@ mv "$OUT" /var/log/node-exporter/fail2ban.prom
 EOF
 chmod +x /usr/local/bin/fail2ban-metrics.sh
 
-( crontab -l 2>/dev/null; echo "* * * * * /usr/local/bin/fail2ban-metrics.sh" ) | crontab -
+# `|| true` matters: under `set -e`, "crontab -l" exiting non-zero (no
+# crontab yet — the normal case on a fresh VM) would abort the script here
+# even with stderr redirected, silently skipping the cron install (confirmed
+# happening in the real deploy — ufw/fail2ban still configured fine, but
+# fail2ban-metrics.sh never got scheduled until fixed by hand).
+( crontab -l 2>/dev/null || true; echo "* * * * * /usr/local/bin/fail2ban-metrics.sh" ) | crontab -
 
 echo "Firewall + fail2ban configured on PRIVATE server."
 ufw status verbose
