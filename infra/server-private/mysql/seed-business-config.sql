@@ -44,4 +44,18 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
+--
+-- Dumping data for table `admin_roles`
+-- Required: the admin created by AdminTableSeeder references admin_role_id=1.
+-- Without this row, /admin 500s with "Attempt to read property name on null"
+-- (confirmed missing in the real deploy — this table isn't part of any
+-- seeder in database/seeds/, only business_settings/currencies were).
+--
+
+LOCK TABLES `admin_roles` WRITE;
+/*!40000 ALTER TABLE `admin_roles` DISABLE KEYS */;
+INSERT IGNORE INTO `admin_roles` (`id`, `name`, `module_access`, `status`, `created_at`, `updated_at`) VALUES (1,'Master Admin',NULL,1,'2022-06-07 10:59:59','2022-06-07 10:59:59');
+/*!40000 ALTER TABLE `admin_roles` ENABLE KEYS */;
+UNLOCK TABLES;
+
 -- Dump completed on 2026-08-01 22:33:33

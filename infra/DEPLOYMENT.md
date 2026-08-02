@@ -59,7 +59,7 @@ desactivado.
 Creá 2 Cloud Firewalls (**Networking → Firewalls → Create Firewall**),
 aplicando cada uno por tag:
 
-- **fw-public** (tag `server-public`): inbound TCP 22 (Sources: tu IP), TCP 80 y 443 (Sources: All IPv4/IPv6).
+- **fw-public** (tag `server-public`): inbound TCP 22 (Sources: tu IP), TCP 80 y 443 (Sources: All IPv4/IPv6), **TCP 9100 (Sources: tag `server-private-app`)** — Servidor B corre Prometheus y necesita scrapear el node-exporter de este servidor por IP privada. **Importante**: los Cloud Firewalls de DigitalOcean se aplican también al tráfico de la red privada (VPC), no solo a internet — sin esta regla, Prometheus nunca puede alcanzar este puerto aunque estén en la misma VPC (confirmado en el despliegue real: `curl` desde Servidor B a Servidor A por IP privada se quedaba colgado hasta agregar esta regla).
 - **fw-private-app** (tag `server-private-app`): inbound TCP 22 (Sources: tu IP), TCP 8080 (Sources: tag `server-public`), TCP 3000 (Sources: tag `server-public`).
 
 Nota: **9100/9104 ya no necesitan regla de firewall** — Prometheus está en
@@ -115,6 +115,12 @@ docker exec -i $(docker compose ps -q mysql) mysql -u"$DB_USERNAME" -p"$DB_PASSW
 # (Cache::rememberForever, confirmado en el código) — sin este paso, seguirás
 # viendo el 500 aunque la BD ya tenga los datos.
 docker compose exec app1 php artisan cache:clear
+
+# Crea el admin (admin@admin.com / 12345678 — cámbiala luego desde el panel).
+# El dump de arriba ya incluye admin_roles (id=1, "Master Admin"), que este
+# seeder necesita — sin esa fila, /admin da 500 "Attempt to read property
+# name on null" aunque el login funcione.
+docker compose exec app1 php artisan db:seed --force
 ```
 
 > Nota: la creación del cliente personal de Passport (necesario para que
