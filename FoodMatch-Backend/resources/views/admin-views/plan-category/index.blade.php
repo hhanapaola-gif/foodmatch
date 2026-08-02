@@ -218,12 +218,3 @@
     </div>
 @endsection
 
-@push('script_2')
-    <script>
-        "use strict";
-        $(".status-change").change(function () {
-            var selectedValue = $(this).val();
-            status_change(selectedValue);
-        });
-    </script>
-@endpush

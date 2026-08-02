@@ -114,10 +114,10 @@ class PlanCategoryController extends Controller
     /**
      * Toggle active status.
      */
-    public function status(Request $request, int $id, int $status): RedirectResponse
+    public function status(Request $request, int $id): RedirectResponse
     {
         $category            = $this->planCategory->findOrFail($id);
-        $category->is_active = $status;
+        $category->is_active = $request->status;
         $category->save();
 
         Toastr::success(translate('Plan category status updated!'));

@@ -229,10 +229,10 @@ class PlanController extends Controller
     /**
      * Toggle plan status.
      */
-    public function status(Request $request, int $id, int $status): RedirectResponse
+    public function status(Request $request, int $id): RedirectResponse
     {
         $plan            = $this->plan->findOrFail($id);
-        $plan->is_active = $status;
+        $plan->is_active = $request->status;
         $plan->save();
 
         Toastr::success(translate('Plan status updated!'));
