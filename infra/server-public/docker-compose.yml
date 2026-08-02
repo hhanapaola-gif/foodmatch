@@ -9,7 +9,6 @@ services:
     environment:
       DOMAIN: ${DOMAIN:?set DOMAIN in .env}
       PRIVATE_SERVER_IP: ${PRIVATE_SERVER_IP:?set PRIVATE_SERVER_IP in .env}
-      MONITORING_SERVER_IP: ${MONITORING_SERVER_IP:?set MONITORING_SERVER_IP in .env}
     volumes:
       - ./nginx/templates:/etc/nginx/templates:ro
       - ./nginx/www:/var/www/certbot:ro

@@ -85,6 +85,13 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+      # First-time initialization on a fresh volume (creating the DB +
+      # running init-exporter-user.sh) can take well over 60s — without this,
+      # the 10x5s retry budget runs out before mysql is ever actually ready
+      # and Compose marks it "unhealthy", blocking every dependent service
+      # (confirmed in pre-deploy validation). start_period doesn't count
+      # failed checks against retries while mysql is still first-booting.
+      start_period: 90s
     restart: unless-stopped
 
   redis:
@@ -94,14 +101,13 @@ services:
       - redis-data:/data
     restart: unless-stopped
 
-  # Exposed on the host so the monitoring server (separate box) can scrape
-  # them over the private network — ufw/Security Group restricts source IP,
-  # see infra/scripts/firewall-private.sh.
+  # 2-server topology: Prometheus lives on THIS same box (see below), so
+  # this is NOT published to the host at all — only reachable over the
+  # internal Docker network by service name. Reduces attack surface vs the
+  # 3-server design, where this had to be exposed for a separate monitoring box.
   node-exporter:
     image: prom/node-exporter:latest
     pid: host
-    ports:
-      - "9100:9100"
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
@@ -119,8 +125,7 @@ services:
     # --config.my-cnf file, which broke this service under :latest (confirmed
     # in pre-deploy validation). v0.14.0 is the last version reading DSN from env.
     image: prom/mysqld-exporter:v0.14.0
-    ports:
-      - "9104:9104"
+    # Not published to the host — same reasoning as node-exporter above.
     environment:
       DATA_SOURCE_NAME: "exporter:${MYSQL_EXPORTER_PASSWORD:?set MYSQL_EXPORTER_PASSWORD in .env}@(mysql:3306)/"
     depends_on:
@@ -128,8 +133,40 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # ---- Monitoring (2-server topology: colocated with the app/db) ----
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=15d
+    restart: unless-stopped
+
+  # Published to the host so the public server's Nginx can reverse proxy
+  # /grafana/ here. ufw/Security Group restricts the source IP to the
+  # public server only — see infra/scripts/firewall-private.sh.
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD in .env}
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost/grafana}
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
 volumes:
   storage1:
   storage2:
   mysql-data:
   redis-data:
+  prometheus-data:
+  grafana-data:

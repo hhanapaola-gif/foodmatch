@@ -3,12 +3,17 @@
 # This box must NOT be reachable from the internet except through the public
 # server's reverse proxy (and SSH, ideally restricted to your own IP).
 #
-# Usage: ./firewall-private.sh <PUBLIC_SERVER_PRIVATE_IP> <MONITORING_SERVER_PRIVATE_IP> [YOUR_ADMIN_IP]
+# 2-server topology: this box also runs Prometheus/Grafana (colocated with
+# the app/db), so node-exporter/mysqld-exporter no longer need a firewall
+# rule at all — they're not published to the host, only reachable inside
+# the Docker network by Prometheus. Only Grafana (3000) needs to be opened,
+# for the public server's Nginx to reverse-proxy /grafana/ here.
+#
+# Usage: ./firewall-private.sh <PUBLIC_SERVER_PRIVATE_IP> [YOUR_ADMIN_IP]
 set -euo pipefail
 
-PUBLIC_SERVER_IP="${1:?Usage: firewall-private.sh <PUBLIC_SERVER_PRIVATE_IP> <MONITORING_SERVER_PRIVATE_IP> [YOUR_ADMIN_IP]}"
-MONITORING_SERVER_IP="${2:?Usage: firewall-private.sh <PUBLIC_SERVER_PRIVATE_IP> <MONITORING_SERVER_PRIVATE_IP> [YOUR_ADMIN_IP]}"
-ADMIN_IP="${3:-}"
+PUBLIC_SERVER_IP="${1:?Usage: firewall-private.sh <PUBLIC_SERVER_PRIVATE_IP> [YOUR_ADMIN_IP]}"
+ADMIN_IP="${2:-}"
 
 apt-get update -y
 apt-get install -y ufw fail2ban
@@ -19,16 +24,13 @@ ufw default allow outgoing
 if [ -n "$ADMIN_IP" ]; then
     ufw allow from "$ADMIN_IP" to any port 22 proto tcp comment "SSH admin only"
 else
-    echo "WARNING: no admin IP given, opening SSH to 0.0.0.0/0. Pass your IP as \$3 to restrict it." >&2
+    echo "WARNING: no admin IP given, opening SSH to 0.0.0.0/0. Pass your IP as \$2 to restrict it." >&2
     ufw allow 22/tcp comment "SSH (unrestricted - fix this)"
 fi
 
-# Only the public server may reach the internal LB (8080).
+# Only the public server may reach the internal LB (8080) and Grafana (3000).
 ufw allow from "$PUBLIC_SERVER_IP" to any port 8080 proto tcp comment "Internal LB - public server only"
-
-# Only the monitoring server may scrape node-exporter/mysqld-exporter.
-ufw allow from "$MONITORING_SERVER_IP" to any port 9100 proto tcp comment "node-exporter - monitoring server only"
-ufw allow from "$MONITORING_SERVER_IP" to any port 9104 proto tcp comment "mysqld-exporter - monitoring server only"
+ufw allow from "$PUBLIC_SERVER_IP" to any port 3000 proto tcp comment "Grafana - public server only"
 
 ufw --force enable
 

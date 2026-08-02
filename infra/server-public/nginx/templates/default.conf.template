@@ -16,7 +16,7 @@ server {
         # here makes nginx strip that prefix before forwarding, which sends
         # Grafana into an infinite self-redirect loop (confirmed in
         # pre-deploy local validation).
-        proxy_pass http://${MONITORING_SERVER_IP}:3000;
+        proxy_pass http://${PRIVATE_SERVER_IP}:3000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

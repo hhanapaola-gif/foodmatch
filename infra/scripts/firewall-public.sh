@@ -7,10 +7,10 @@
 # Security Group) to only allow 22, 80, 443 inbound — UFW alone is not enough,
 # see infra/DEPLOYMENT.md.
 #
-# Usage: ./firewall-public.sh <MONITORING_SERVER_PRIVATE_IP>
+# Usage: ./firewall-public.sh <PRIVATE_SERVER_PRIVATE_IP>
 set -euo pipefail
 
-MONITORING_SERVER_IP="${1:?Usage: firewall-public.sh <MONITORING_SERVER_PRIVATE_IP>}"
+PRIVATE_SERVER_IP="${1:?Usage: firewall-public.sh <PRIVATE_SERVER_PRIVATE_IP>}"
 
 apt-get update -y
 apt-get install -y ufw fail2ban
@@ -22,8 +22,9 @@ ufw allow 22/tcp comment "SSH"
 ufw allow 80/tcp comment "HTTP"
 ufw allow 443/tcp comment "HTTPS"
 
-# Only the monitoring server may scrape this box's node-exporter.
-ufw allow from "$MONITORING_SERVER_IP" to any port 9100 proto tcp comment "node-exporter - monitoring server only"
+# Only Servidor B (which now runs Prometheus too, 2-server topology) may
+# scrape this box's node-exporter.
+ufw allow from "$PRIVATE_SERVER_IP" to any port 9100 proto tcp comment "node-exporter - private server only"
 
 ufw --force enable
 

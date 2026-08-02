@@ -33,13 +33,14 @@ server {
 
     client_max_body_size 64M;
 
-    # Grafana, reverse-proxied from the monitoring server.
+    # Grafana, reverse-proxied from Servidor B (colocated with the app/db
+    # in this 2-server topology).
     # Restrict to evaluators/admins in production, e.g. with `allow`/`deny`
     # or HTTP basic auth (see DEPLOYMENT.md).
     location /grafana/ {
         # NO trailing slash after the port — see default.conf.template for why
         # (GF_SERVER_SERVE_FROM_SUB_PATH=true needs the "/grafana/" prefix preserved).
-        proxy_pass http://${MONITORING_SERVER_IP}:3000;
+        proxy_pass http://${PRIVATE_SERVER_IP}:3000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
