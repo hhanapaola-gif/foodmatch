@@ -46,7 +46,7 @@ class Branch extends Authenticatable
     public function getImageFullPathAttribute(): string
     {
         $image = $this->image ?? null;
-        $path = asset('public/assets/admin/img/160x160/img2.jpg');
+        $path = asset('assets/admin/img/160x160/img2.jpg');
 
         if (!is_null($image) && Storage::disk('public')->exists('branch/' . $image)) {
             $path = asset('storage/branch/' . $image);
@@ -57,7 +57,7 @@ class Branch extends Authenticatable
     public function getCoverImageFullPathAttribute(): string
     {
         $image = $this->cover_image ?? null;
-        $path = asset('public/assets/admin/img/160x160/img2.jpg');
+        $path = asset('assets/admin/img/160x160/img2.jpg');
 
         if (!is_null($image) && Storage::disk('public')->exists('branch/' . $image)) {
             $path = asset('storage/branch/' . $image);

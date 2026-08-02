@@ -1265,7 +1265,7 @@ class OrderController extends Controller
             'variation' => $variation,
             'add_on_ids' => $addonIds,
             'add_on_qtys' => $addonQuantities,
-            'image' => $product->imageFullPath ?? asset('public/assets/admin/img/160x160/img2.jpg'),
+            'image' => $product->imageFullPath ?? asset('assets/admin/img/160x160/img2.jpg'),
             'is_new' => 1,
         ];
 

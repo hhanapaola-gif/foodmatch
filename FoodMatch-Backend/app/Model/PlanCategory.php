@@ -24,7 +24,7 @@ class PlanCategory extends Model
 
     public function getImageFullPathAttribute(): string
     {
-        $placeholder = asset('public/assets/admin/img/160x160/img2.jpg');
+        $placeholder = asset('assets/admin/img/160x160/img2.jpg');
         if ($this->image && Storage::disk('public')->exists('plan-category/' . $this->image)) {
             return asset('storage/plan-category/' . $this->image);
         }

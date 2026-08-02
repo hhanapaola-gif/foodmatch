@@ -22,7 +22,7 @@ class BranchPromotion extends Model
     public function getPromotionNameFullPathAttribute(): string
     {
         $image = $this->promotion_name ?? null;
-        $path = asset('public/assets/admin/img/160x160/img2.jpg');
+        $path = asset('assets/admin/img/160x160/img2.jpg');
 
         if (!is_null($image) && Storage::disk('public')->exists('promotion/' . $image)) {
             $path = asset('storage/promotion/' . $image);

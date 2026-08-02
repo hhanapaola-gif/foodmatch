@@ -62,7 +62,7 @@ class Plan extends Model
     public function getImageFullPathAttribute(): string
     {
         $image = $this->image ?? null;
-        $placeholder = asset('public/assets/admin/img/160x160/img2.jpg');
+        $placeholder = asset('assets/admin/img/160x160/img2.jpg');
 
         if (!is_null($image) && Storage::disk('public')->exists('plan/' . $image)) {
             return asset('storage/plan/' . $image);

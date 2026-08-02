@@ -7,6 +7,7 @@ RUN apk add --no-cache \
         icu-dev \
         libjpeg-turbo-dev \
         libpng-dev \
+        libwebp-dev \
         libzip-dev \
         libxml2-dev \
         oniguruma-dev \
@@ -14,7 +15,7 @@ RUN apk add --no-cache \
         unzip \
         git \
     && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j"$(nproc)" \
         pdo_mysql \
         gd \

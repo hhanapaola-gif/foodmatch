@@ -30,7 +30,7 @@ class Admin extends Authenticatable
     public function getImageFullPathAttribute(): string
     {
         $image = $this->image ?? null;
-        $path = asset('public/assets/admin/img/400x400/img2.jpg');
+        $path = asset('assets/admin/img/400x400/img2.jpg');
 
         if (!is_null($image) && Storage::disk('public')->exists('admin/' . $image)) {
             $path = asset('storage/admin/' . $image);
@@ -47,7 +47,7 @@ class Admin extends Authenticatable
                 if (Storage::disk('public')->exists('admin/' . $item)) {
                     $imageUrlArray[$key] = asset('storage/admin/' . $item);
                 } else {
-                    $imageUrlArray[$key] = asset('public/assets/admin/img/400x400/img2.jpg');
+                    $imageUrlArray[$key] = asset('assets/admin/img/400x400/img2.jpg');
                 }
             }
         }

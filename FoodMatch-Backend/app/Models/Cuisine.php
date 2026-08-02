@@ -33,7 +33,7 @@ class Cuisine extends Model
     public function getImageFullPathAttribute(): string
     {
         $image = $this->image ?? null;
-        $path = asset('public/assets/admin/img/160x160/img2.jpg');
+        $path = asset('assets/admin/img/160x160/img2.jpg');
 
         if (!is_null($image) && Storage::disk('public')->exists('cuisine/' . $image)) {
             $path = asset('storage/cuisine/' . $image);

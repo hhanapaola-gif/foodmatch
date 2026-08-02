@@ -104,7 +104,7 @@ class User extends Authenticatable
     public function getImageFullPathAttribute($type = null): string
     {
         $image = $this->image ?? null;
-        $path = asset('public/assets/admin/img/160x160/img1.jpg');
+        $path = asset('assets/admin/img/160x160/img1.jpg');
 
         if (!is_null($image) && Storage::disk('public')->exists('profile/' . $image)) {
             $path = asset('storage/profile/' . $image);
