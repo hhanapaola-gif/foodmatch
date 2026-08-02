@@ -11,7 +11,7 @@ export default function WelcomeScreen({ navigation }) {
   return (
     // top edge deliberately excluded: the hero image bleeds under the status bar/notch
     <SafeAreaView style={styles.container} edges={['bottom']}>
-      <Image source={{ uri: 'https://picsum.photos/seed/welcome/700/500' }} style={styles.image} />
+      <Image source={require('../../../assets/bienvenida.png')} style={styles.image} />
       <View style={styles.content}>
         <Text style={styles.title}>Bienvenido a FoodMatch</Text>
         <Text style={styles.subtitle}>Inicia sesión para suscribirte a un plan alimenticio y gestionar tus entregas.</Text>

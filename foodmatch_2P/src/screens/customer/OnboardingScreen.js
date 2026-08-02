@@ -9,19 +9,19 @@ const SLIDES = [
     id: '1',
     title: 'Planes alimenticios de varios restaurantes',
     text: 'Descubre planes semanales y mensuales creados por distintos restaurantes socios, todo en un solo lugar.',
-    image: 'https://picsum.photos/seed/onboard1/600/500',
+    image: require('../../../assets/restaurantes.png'),
   },
   {
     id: '2',
     title: 'Suscríbete a tu plan ideal',
     text: 'Elige tu tipo de dieta, la frecuencia de entrega y recibe tus comidas sin complicarte cada semana.',
-    image: 'https://picsum.photos/seed/onboard2/600/500',
+    image: require('../../../assets/plan.png'),
   },
   {
     id: '3',
     title: 'Sigue tu calendario de entregas',
     text: 'Consulta el calendario con todas tus entregas programadas y el estado de cada una.',
-    image: 'https://picsum.photos/seed/onboard3/600/500',
+    image: require('../../../assets/calendario.png'),
   },
 ];
 
@@ -51,7 +51,7 @@ export default function OnboardingScreen({ navigation }) {
         onMomentumScrollEnd={(e) => setIndex(Math.round(e.nativeEvent.contentOffset.x / width))}
         renderItem={({ item }) => (
           <View style={[styles.slide, { width }]}>
-            <Image source={{ uri: item.image }} style={styles.image} />
+            <Image source={item.image} style={styles.image} />
             <Text style={styles.title}>{item.title}</Text>
             <Text style={styles.text}>{item.text}</Text>
           </View>
