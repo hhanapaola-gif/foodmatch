@@ -43,6 +43,7 @@ RUN composer dump-autoload --optimize --no-dev \
     && ln -sf ../storage/app/public public/storage
 
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache-recommended.ini
+COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/uploads-recommended.ini
 COPY docker/php/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
