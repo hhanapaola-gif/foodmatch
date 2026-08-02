@@ -54,6 +54,18 @@
           "legendFormat": "connections"
         }
       ]
+    },
+    {
+      "id": 5,
+      "title": "Firewall - IPs baneadas (fail2ban)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "targets": [
+        {
+          "expr": "fail2ban_banned_current",
+          "legendFormat": "{{server}} - jail {{jail}}"
+        }
+      ]
     }
   ]
 }
