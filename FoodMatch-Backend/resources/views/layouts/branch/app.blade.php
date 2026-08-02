@@ -405,5 +405,24 @@
 <script>
     if (/MSIE \d|Trident.*rv:/.test(navigator.userAgent)) document.write('<script src="{{asset('assets/admin')}}/vendor/babel-polyfill/polyfill.min.js"><\/script>');
 </script>
+
+{{-- Global upload-size guard — see the matching block in
+     layouts/admin/app.blade.php for why this exists. Keep in sync with
+     FoodMatch-Backend/docker/php/uploads.ini. --}}
+<script>
+    (function () {
+        var MAX_UPLOAD_BYTES = 20 * 1024 * 1024; // 20MB, matches uploads.ini
+        $(document).on('change', 'input[type="file"]', function () {
+            var input = this;
+            var oversized = Array.prototype.slice.call(input.files).find(function (file) {
+                return file.size > MAX_UPLOAD_BYTES;
+            });
+            if (oversized) {
+                toastr.error('"' + oversized.name + '" pesa ' + (oversized.size / (1024 * 1024)).toFixed(1) + 'MB. El máximo permitido es 20MB.');
+                input.value = '';
+            }
+        });
+    })();
+</script>
 </body>
 </html>

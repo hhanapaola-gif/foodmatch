@@ -783,6 +783,28 @@
 
     </script>
 
+    {{-- Global upload-size guard: without this, a file bigger than PHP's
+         upload_max_filesize/post_max_size just fails silently or with a
+         confusing network error after the user waits for the upload —
+         catching it on file selection, before any request is sent, gives
+         an immediate, clear message instead. Applies to every file input
+         on every admin page (delegated, not per-form). Keep this in sync
+         with FoodMatch-Backend/docker/php/uploads.ini. --}}
+    <script>
+        (function () {
+            var MAX_UPLOAD_BYTES = 20 * 1024 * 1024; // 20MB, matches uploads.ini
+            $(document).on('change', 'input[type="file"]', function () {
+                var input = this;
+                var oversized = Array.prototype.slice.call(input.files).find(function (file) {
+                    return file.size > MAX_UPLOAD_BYTES;
+                });
+                if (oversized) {
+                    toastr.error('"' + oversized.name + '" pesa ' + (oversized.size / (1024 * 1024)).toFixed(1) + 'MB. El máximo permitido es 20MB.');
+                    input.value = '';
+                }
+            });
+        })();
+    </script>
 
 </body>
 </html>

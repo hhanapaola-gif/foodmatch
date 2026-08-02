@@ -277,7 +277,7 @@ class BusinessSettingsController extends Controller
             'restaurant_name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:1000',
-            'logo' => 'nullable|image|max:2048',
+            'logo' => 'nullable|image|max:20480',
         ]);
 
         $this->InsertOrUpdateBusinessData(['key' => 'restaurant_name'], ['value' => $request['restaurant_name']]);
