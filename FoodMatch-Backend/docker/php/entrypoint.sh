@@ -31,6 +31,15 @@ if [ "$CONTAINER_ROLE" = "primary" ]; then
     if [ "$HAS_PERSONAL_CLIENT" != "1" ]; then
         php artisan passport:client --personal --name="FoodMatch Personal Access Client" -n
     fi
+
+    # passport:keys writes oauth-private.key/oauth-public.key owned by
+    # root (whoever runs this script) with restrictive permissions —
+    # created AFTER the chown above, so php-fpm (running as www-data)
+    # can't read them: "Key path ... does not exist or is not readable"
+    # on every authenticated request. Confirmed in the real deploy — only
+    # shows up once traffic actually hits an endpoint using Passport auth,
+    # not during boot. Re-chown now that these files exist.
+    chown -R www-data:www-data storage
 fi
 
 exec "$@"
