@@ -13,18 +13,7 @@ import { listPlanCategories, listPlans, listBranches, getPlan } from '../../api/
 import { listAddresses } from '../../api/customer';
 import { listBanners } from '../../api/banners';
 import { branchImageUri } from '../../utils/branch';
-
-function categoryIcon(name = '') {
-  const n = name.toLowerCase();
-  if (n.includes('vegan')) return 'flower-outline';
-  if (n.includes('veget')) return 'leaf-outline';
-  if (n.includes('prote')) return 'barbell-outline';
-  if (n.includes('gluten')) return 'checkmark-circle-outline';
-  if (n.includes('famil')) return 'people-outline';
-  if (n.includes('calor') || n.includes('carbo')) return 'flame-outline';
-  if (n.includes('fit')) return 'fitness-outline';
-  return 'nutrition-outline';
-}
+import { categoryIcon, hasRealCategoryImage } from '../../utils/category';
 
 export default function HomeScreen({ navigation }) {
   const { user, isGuest, isAuthenticated } = useAuth();
@@ -178,7 +167,11 @@ export default function HomeScreen({ navigation }) {
                   onPress={() => navigation.navigate('PlanCategory', { categoryId: item.id, categoryName: item.name })}
                 >
                   <View style={styles.categoryIconWrap}>
-                    <Ionicons name={categoryIcon(item.name)} size={24} color={customerColors.primary} />
+                    {hasRealCategoryImage(item) ? (
+                      <Image source={{ uri: item.image }} style={styles.categoryImage} />
+                    ) : (
+                      <Ionicons name={categoryIcon(item.name)} size={24} color={customerColors.primary} />
+                    )}
                   </View>
                   <Text style={styles.categoryLabel} numberOfLines={2}>
                     {item.name}
@@ -282,6 +275,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 6,
+    overflow: 'hidden',
+  },
+  categoryImage: {
+    width: '100%',
+    height: '100%',
   },
   categoryLabel: { fontFamily: customerFonts.regular, fontSize: customerFontSizes.small, color: customerColors.text, textAlign: 'center' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },

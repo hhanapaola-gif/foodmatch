@@ -1,23 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { customerColors, customerFonts, customerFontSizes, customerRadii } from '../../theme/customerTheme';
 import { useColumnCount } from '../../utils/responsive';
 import { listPlanCategories, listBranches } from '../../api/plans';
-
-function categoryIcon(name = '') {
-  const n = name.toLowerCase();
-  if (n.includes('vegan')) return 'flower-outline';
-  if (n.includes('veget')) return 'leaf-outline';
-  if (n.includes('prote')) return 'barbell-outline';
-  if (n.includes('gluten')) return 'checkmark-circle-outline';
-  if (n.includes('famil')) return 'people-outline';
-  if (n.includes('calor') || n.includes('carbo')) return 'flame-outline';
-  if (n.includes('fit')) return 'fitness-outline';
-  return 'nutrition-outline';
-}
+import { categoryIcon, hasRealCategoryImage } from '../../utils/category';
+import { branchImageUri } from '../../utils/branch';
 
 export default function MenuScreen() {
   const navigation = useNavigation();
@@ -60,7 +50,11 @@ export default function MenuScreen() {
                 onPress={() => navigation.navigate('PlanCategory', { categoryId: item.id, categoryName: item.name })}
               >
                 <View style={styles.iconWrap}>
-                  <Ionicons name={categoryIcon(item.name)} size={30} color={customerColors.primary} />
+                  {hasRealCategoryImage(item) ? (
+                    <Image source={{ uri: item.image }} style={styles.iconImage} />
+                  ) : (
+                    <Ionicons name={categoryIcon(item.name)} size={30} color={customerColors.primary} />
+                  )}
                 </View>
                 <Text style={styles.cardTitle}>{item.name}</Text>
               </Pressable>
@@ -76,7 +70,7 @@ export default function MenuScreen() {
                 onPress={() => navigation.navigate('RestaurantPlans', { restaurant })}
               >
                 <View style={styles.restaurantLogoWrap}>
-                  <Ionicons name="restaurant-outline" size={20} color={customerColors.primary} />
+                  <Image source={{ uri: branchImageUri(restaurant) }} style={styles.restaurantLogoImage} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.restaurantName}>{restaurant.name}</Text>
@@ -134,6 +128,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 10,
+    overflow: 'hidden',
+  },
+  iconImage: {
+    width: '100%',
+    height: '100%',
   },
   cardTitle: { fontFamily: customerFonts.medium, fontSize: customerFontSizes.default, color: customerColors.text, textAlign: 'center' },
   restaurantList: {
@@ -159,6 +158,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
+    overflow: 'hidden',
+  },
+  restaurantLogoImage: {
+    width: '100%',
+    height: '100%',
   },
   restaurantName: { fontFamily: customerFonts.semiBold, fontSize: customerFontSizes.default, color: customerColors.text },
   restaurantMeta: { fontFamily: customerFonts.regular, fontSize: customerFontSizes.small, color: customerColors.hint, marginTop: 2 },
