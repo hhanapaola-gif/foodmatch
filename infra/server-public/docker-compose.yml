@@ -6,6 +6,9 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      # nginx-exporter below shares this container's network namespace
+      # (network_mode: service:nginx), so its port is published here.
+      - "9113:9113"
     environment:
       DOMAIN: ${DOMAIN:?set DOMAIN in .env}
       PRIVATE_SERVER_IP: ${PRIVATE_SERVER_IP:?set PRIVATE_SERVER_IP in .env}
@@ -13,6 +16,18 @@ services:
       - ./nginx/templates:/etc/nginx/templates:ro
       - ./nginx/www:/var/www/certbot:ro
       - certbot-certs:/etc/letsencrypt:ro
+    restart: unless-stopped
+
+  # Exposed on the host so the private server's Prometheus can scrape this
+  # box's edge-nginx metrics — ufw/Security Group restricts the source IP,
+  # see infra/scripts/firewall-public.sh.
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:1.5.1
+    network_mode: "service:nginx"
+    command:
+      - --nginx.scrape-uri=http://127.0.0.1:80/nginx_status
+    depends_on:
+      - nginx
     restart: unless-stopped
 
   # Exposed on the host so the monitoring server can scrape this box's

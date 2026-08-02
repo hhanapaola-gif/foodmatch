@@ -9,6 +9,14 @@ server {
         root /var/www/certbot;
     }
 
+    # Scraped by nginx-exporter (network_mode: service:nginx, so it hits this
+    # over loopback) — never reachable from outside this container's netns.
+    location = /nginx_status {
+        stub_status;
+        allow 127.0.0.1;
+        deny all;
+    }
+
     location /grafana/ {
         # NO trailing slash after the port: Grafana runs with
         # GF_SERVER_SERVE_FROM_SUB_PATH=true, so it expects to see the

@@ -136,6 +136,19 @@ services:
       - --collector.textfile.directory=/host/varlog/node-exporter
     restart: unless-stopped
 
+  # Reads stub_status from the internal LB (`lb`) over loopback — shares its
+  # network namespace, so no port is published, no firewall rule needed
+  # (same "not published to host" pattern as node-exporter/mysqld-exporter
+  # above). Prometheus reaches it at lb:9113 since it shares lb's IP.
+  nginx-exporter-lb:
+    image: nginx/nginx-prometheus-exporter:1.5.1
+    network_mode: "service:lb"
+    command:
+      - --nginx.scrape-uri=http://127.0.0.1:80/nginx_status
+    depends_on:
+      - lb
+    restart: unless-stopped
+
   mysqld-exporter:
     # Pinned: v0.15+ dropped DATA_SOURCE_NAME env var support in favor of a
     # --config.my-cnf file, which broke this service under :latest (confirmed

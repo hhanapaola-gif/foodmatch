@@ -1,0 +1,75 @@
+{
+  "title": "FoodMatch - Nginx",
+  "uid": "foodmatch-nginx",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Requests/sec",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "rate(nginx_http_requests_total[5m])",
+          "legendFormat": "{{server}} ({{role}})"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Active Connections",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "nginx_connections_active",
+          "legendFormat": "{{server}} ({{role}})"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Connections by State - LB",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "nginx_connections_reading{server=\"private\"}",
+          "legendFormat": "reading"
+        },
+        {
+          "expr": "nginx_connections_writing{server=\"private\"}",
+          "legendFormat": "writing"
+        },
+        {
+          "expr": "nginx_connections_waiting{server=\"private\"}",
+          "legendFormat": "waiting"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Connections by State - Edge (público)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "nginx_connections_reading{server=\"public\"}",
+          "legendFormat": "reading"
+        },
+        {
+          "expr": "nginx_connections_writing{server=\"public\"}",
+          "legendFormat": "writing"
+        },
+        {
+          "expr": "nginx_connections_waiting{server=\"public\"}",
+          "legendFormat": "waiting"
+        }
+      ]
+    }
+  ]
+}

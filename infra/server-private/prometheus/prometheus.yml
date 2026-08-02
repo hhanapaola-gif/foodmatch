@@ -22,6 +22,15 @@ scrape_configs:
     static_configs:
       - targets: ["mysqld-exporter:9104"]
 
+  # Internal LB's stub_status, via the sidecar exporter (network_mode:
+  # service:lb) — reachable by the "lb" service name since it shares its IP.
+  - job_name: "nginx-exporter-lb"
+    static_configs:
+      - targets: ["lb:9113"]
+        labels:
+          server: "private"
+          role: "lb"
+
   # PUBLIC_SERVER_IP below is a placeholder — replace with the real private
   # IP of Servidor A before starting, see infra/DEPLOYMENT.md ("sed -i"
   # step). Only reachable because firewall-public.sh allows this server's
@@ -32,5 +41,14 @@ scrape_configs:
         labels:
           server: "public"
 
-  # Nginx LB and edge Nginx expose /nginx_status via stub_status; scraped
-  # through a small nginx-prometheus-exporter if added later (see DEPLOYMENT.md).
+  # Edge Nginx's stub_status, via the sidecar exporter on Servidor A. Same
+  # placeholder/firewall caveat as node-exporter-public above, plus port
+  # 9113 needs its own ufw + DO Cloud Firewall rule (see firewall-public.sh
+  # and DEPLOYMENT.md — DO Cloud Firewalls filter VPC-private traffic too,
+  # not just internet-facing, confirmed the hard way with port 9100).
+  - job_name: "nginx-exporter-public"
+    static_configs:
+      - targets: ["PUBLIC_SERVER_IP:9113"]
+        labels:
+          server: "public"
+          role: "edge"

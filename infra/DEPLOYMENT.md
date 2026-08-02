@@ -59,12 +59,14 @@ desactivado.
 Creá 2 Cloud Firewalls (**Networking → Firewalls → Create Firewall**),
 aplicando cada uno por tag:
 
-- **fw-public** (tag `server-public`): inbound TCP 22 (Sources: tu IP), TCP 80 y 443 (Sources: All IPv4/IPv6), **TCP 9100 (Sources: tag `server-private-app`)** — Servidor B corre Prometheus y necesita scrapear el node-exporter de este servidor por IP privada. **Importante**: los Cloud Firewalls de DigitalOcean se aplican también al tráfico de la red privada (VPC), no solo a internet — sin esta regla, Prometheus nunca puede alcanzar este puerto aunque estén en la misma VPC (confirmado en el despliegue real: `curl` desde Servidor B a Servidor A por IP privada se quedaba colgado hasta agregar esta regla).
+- **fw-public** (tag `server-public`): inbound TCP 22 (Sources: tu IP), TCP 80 y 443 (Sources: All IPv4/IPv6), **TCP 9100 y TCP 9113 (Sources: tag `server-private-app`)** — Servidor B corre Prometheus y necesita scrapear el node-exporter y el nginx-exporter de este servidor por IP privada. **Importante**: los Cloud Firewalls de DigitalOcean se aplican también al tráfico de la red privada (VPC), no solo a internet — sin esta regla, Prometheus nunca puede alcanzar estos puertos aunque estén en la misma VPC (confirmado en el despliegue real con el 9100: `curl` desde Servidor B a Servidor A por IP privada se quedaba colgado hasta agregar esa regla; 9113 es el mismo caso).
 - **fw-private-app** (tag `server-private-app`): inbound TCP 22 (Sources: tu IP), TCP 8080 (Sources: tag `server-public`), TCP 3000 (Sources: tag `server-public`).
 
-Nota: **9100/9104 ya no necesitan regla de firewall** — Prometheus está en
-la misma máquina que esos exporters ahora, se scrapea por red interna de
-Docker, ni siquiera se publican al host.
+Nota: **9100/9104/9113-lb ya no necesitan regla de firewall** — Prometheus
+está en la misma máquina que esos exporters ahora (node-exporter,
+mysqld-exporter, y el nginx-exporter del LB interno), se scrapea por red
+interna de Docker, ni siquiera se publican al host. Solo el nginx-exporter
+del Servidor A (edge, puerto 9113) cruza la red, porque vive en la otra caja.
 
 Una vez "Active" los 2 Droplets, asigná una **Reserved IP** al Servidor A
 (**Networking → Reserved IPs → Assign to Droplet**).
@@ -195,7 +197,7 @@ tiene abierto 22 (a tu IP), 80 y 443 (All IPv4/IPv6).
 | API protegida con JWT | `curl https://tu-dominio.com/api/v1/customer/info` sin token → 401; con `Authorization: Bearer <token>` de `/api/v1/auth/login` → 200 |
 | Balanceador de carga | `for i in 1 2 3 4; do curl -s https://tu-dominio.com/api/v1/config -H "X-Debug: $i"; done` + revisa logs (`docker compose logs web1 web2`) alternando |
 | Firewall activo | `sudo ufw status verbose` en las 2 VMs + revisa los Cloud Firewalls en la consola de DigitalOcean |
-| Monitoreo | `https://tu-dominio.com/grafana/` (login con `GRAFANA_ADMIN_USER`/`PASSWORD`), dashboard "FoodMatch - Overview" con métricas de ambas cajas |
+| Monitoreo | `https://tu-dominio.com/grafana/` (login con `GRAFANA_ADMIN_USER`/`PASSWORD`), dashboards "FoodMatch - Overview" (CPU/RAM/disco/MySQL) y "FoodMatch - Nginx" (requests/sec y conexiones del LB interno y del Nginx edge) con métricas de ambas cajas |
 | BD no expuesta | Desde tu laptop: `nc -zv <IP_PUBLICA_SERVIDOR_A> 3306` → debe fallar (timeout/refused) |
 | Hasheo/encriptado | `php artisan tinker` → `Hash::make('demo')` y `Crypt::encryptString('demo')` en el Servidor B |
 

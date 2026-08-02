@@ -23,8 +23,9 @@ ufw allow 80/tcp comment "HTTP"
 ufw allow 443/tcp comment "HTTPS"
 
 # Only Servidor B (which now runs Prometheus too, 2-server topology) may
-# scrape this box's node-exporter.
+# scrape this box's node-exporter / nginx-exporter.
 ufw allow from "$PRIVATE_SERVER_IP" to any port 9100 proto tcp comment "node-exporter - private server only"
+ufw allow from "$PRIVATE_SERVER_IP" to any port 9113 proto tcp comment "nginx-exporter - private server only"
 
 ufw --force enable
 
