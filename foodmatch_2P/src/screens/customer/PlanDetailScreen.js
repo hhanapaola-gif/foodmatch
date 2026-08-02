@@ -6,7 +6,7 @@ import Header from '../../components/customer/Header';
 import Button from '../../components/customer/Button';
 import { customerColors, customerFonts, customerFontSizes, customerRadii } from '../../theme/customerTheme';
 import { useCart } from '../../context/customer/CartContext';
-import { DAYS, availableMeals } from '../../utils/plan';
+import { availableDays, availableMeals } from '../../utils/plan';
 import { SERVER_BASE_URL } from '../../config/env';
 
 const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=900&q=60';
@@ -15,8 +15,9 @@ export default function PlanDetailScreen({ route, navigation }) {
   const { plan } = route.params || {};
   const { addToCart, getPlanPrice } = useCart();
   const meals = plan ? availableMeals(plan) : [];
+  const days = plan ? availableDays(plan) : [];
 
-  const [selectedDays, setSelectedDays] = useState(['mon', 'wed', 'fri']);
+  const [selectedDays, setSelectedDays] = useState(() => days.map((d) => d.code));
   const [selectedMeals, setSelectedMeals] = useState(meals.map((m) => m.code));
   const [formError, setFormError] = useState('');
 
@@ -105,7 +106,7 @@ export default function PlanDetailScreen({ route, navigation }) {
 
             <Text style={styles.sectionTitle}>Días de entrega</Text>
             <View style={styles.daysRow}>
-              {DAYS.map((day) => {
+              {days.map((day) => {
                 const selected = selectedDays.includes(day.code);
                 return (
                   <Pressable

@@ -14,6 +14,21 @@ export const DAYS = [
 // same day codes used everywhere else in the app.
 export const DAY_CODE_TO_WEEKDAY = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 };
 
+// Backend PlanDay.day_of_week numbering (1 = Monday ... 7 = Sunday), the same
+// mapping PlanController@store/@update use to build plan_days rows. The API
+// returns a plan's allowed days as `days_of_service` using these numbers.
+export const DAY_CODE_TO_SERVICE_DAY = { mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6, sun: 7 };
+
+// Days a customer may actually pick for this plan, per the restaurant's
+// Schedule (Available Days) setting. Falls back to all 7 days if the plan
+// has no days_of_service (e.g. relation not loaded), so older data doesn't
+// silently block ordering.
+export function availableDays(plan) {
+  const allowed = plan?.days_of_service;
+  if (!Array.isArray(allowed) || allowed.length === 0) return DAYS;
+  return DAYS.filter((day) => allowed.includes(DAY_CODE_TO_SERVICE_DAY[day.code]));
+}
+
 export const MEALS = [
   { code: 'breakfast', label: 'Desayuno', priceField: 'breakfast_price' },
   { code: 'lunch', label: 'Almuerzo', priceField: 'lunch_price' },

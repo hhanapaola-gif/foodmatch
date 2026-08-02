@@ -134,6 +134,23 @@ class PlanController extends Controller
             'payment_method'  => 'nullable|in:wallet,card,cash',
         ]);
 
+        // ── Day abbreviation → integer map ───────────────────────────────────
+        $dayMap = ['mon' => 1, 'tue' => 2, 'wed' => 3, 'thu' => 4, 'fri' => 5, 'sat' => 6, 'sun' => 7];
+
+        // ── Schedule guard: reject days outside the plan's available days ─────
+        $allowedDays = $plan->days->pluck('day_of_week')->all();
+        if (!empty($allowedDays)) {
+            $invalidDays = array_filter(
+                $request->selected_days,
+                fn ($abbr) => !in_array($dayMap[$abbr] ?? null, $allowedDays, true)
+            );
+            if (!empty($invalidDays)) {
+                return response()->json([
+                    'message' => translate('Uno o más días seleccionados no están disponibles para este plan.'),
+                ], 422);
+            }
+        }
+
         // ── Next-Monday guard ────────────────────────────────────────────────
         $today      = Carbon::today('UTC');
         $nextMonday = $today->copy()->next(Carbon::MONDAY);
@@ -173,9 +190,6 @@ class PlanController extends Controller
                 ], 422);
             }
         }
-
-        // ── Day abbreviation → integer map ───────────────────────────────────
-        $dayMap = ['mon' => 1, 'tue' => 2, 'wed' => 3, 'thu' => 4, 'fri' => 5, 'sat' => 6, 'sun' => 7];
 
         // ── Persist order ────────────────────────────────────────────────────
         $planOrder = $this->planOrder->create([
