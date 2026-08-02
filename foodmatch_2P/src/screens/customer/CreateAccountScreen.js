@@ -40,7 +40,7 @@ export default function CreateAccountScreen({ navigation }) {
       await register(values);
       navigation.replace('Dashboard');
     } catch (err) {
-      setServerError(err.message || extractErrorMessage(err, 'No pudimos crear tu cuenta.'));
+      setServerError(err.response ? extractErrorMessage(err, 'No pudimos crear tu cuenta.') : err.message);
     } finally {
       setSubmitting(false);
     }

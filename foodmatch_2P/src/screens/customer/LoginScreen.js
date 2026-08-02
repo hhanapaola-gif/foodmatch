@@ -34,7 +34,7 @@ export default function LoginScreen({ navigation }) {
       await login(emailOrPhone, password);
       navigation.replace('Dashboard');
     } catch (err) {
-      setServerError(err.message || extractErrorMessage(err, 'No pudimos iniciar sesión. Revisa tus datos.'));
+      setServerError(err.response ? extractErrorMessage(err, 'No pudimos iniciar sesión. Revisa tus datos.') : err.message);
     } finally {
       setSubmitting(false);
     }
