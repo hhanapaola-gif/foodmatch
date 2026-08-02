@@ -275,6 +275,7 @@ Route::group(['namespace' => 'Api\V1', 'middleware' => 'localization'], function
     Route::group(['prefix' => 'branch'], function () {
         Route::get('list', [BranchController::class, 'list']);
         Route::get('products', [BranchController::class, 'products']);
+        Route::get('{id}', [BranchController::class, 'show'])->whereNumber('id');
     });
 
     Route::post('payment-mobile', [DigitalPaymentController::class, 'payment']);

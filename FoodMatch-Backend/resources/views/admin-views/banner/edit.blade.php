@@ -34,6 +34,7 @@
                                                 <option value="product" {{$banner['product_id']!=null?'selected':''}}>{{translate('product')}}</option>
                                                 <option value="category" {{$banner['category_id']!=null?'selected':''}}>{{translate('category')}}</option>
                                                 <option value="plan" {{isset($banner['plan_id'])&&$banner['plan_id']!=null?'selected':''}}>{{ translate('Plan') }}</option>
+                                                <option value="restaurant" {{isset($banner['branch_id'])&&$banner['branch_id']!=null?'selected':''}}>{{ translate('Restaurant') }}</option>
                                             </select>
                                         </div>
                                         <div class="form-group mb-0" id="type-product" style="display: {{$banner['product_id']!=null?'block':'none'}}">
@@ -57,6 +58,14 @@
                                             <select name="plan_id" class="form-control js-select2-custom" tabindex="5">
                                                 @foreach($plans as $plan)
                                                     <option value="{{$plan['id']}}" {{isset($banner['plan_id'])&&$banner['plan_id']==$plan['id']?'selected':''}}>{{$plan['title']}}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="form-group mb-0" id="type-restaurant" style="display: {{isset($banner['branch_id'])&&$banner['branch_id']!=null?'block':'none'}}">
+                                            <label class="input-label">{{ translate('Restaurant') }} <span class="text-danger ml-1">*</span></label>
+                                            <select name="branch_id" class="form-control js-select2-custom" tabindex="5">
+                                                @foreach($branches as $branch)
+                                                    <option value="{{$branch['id']}}" {{isset($banner['branch_id'])&&$banner['branch_id']==$branch['id']?'selected':''}}>{{$branch['name']}}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -155,12 +164,15 @@
             $("#type-product").hide();
             $("#type-category").hide();
             $("#type-plan").hide();
+            $("#type-restaurant").hide();
             if (type === 'product') {
                 $("#type-product").show();
             } else if (type === 'category') {
                 $("#type-category").show();
             } else if (type === 'plan') {
                 $("#type-plan").show();
+            } else if (type === 'restaurant') {
+                $("#type-restaurant").show();
             }
         }
     </script>

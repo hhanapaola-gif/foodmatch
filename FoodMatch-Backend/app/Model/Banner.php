@@ -14,6 +14,7 @@ class Banner extends Model
         'product_id'  => 'integer',
         'category_id' => 'integer',
         'plan_id'     => 'integer',
+        'branch_id'   => 'integer',
         'created_at'  => 'datetime',
         'updated_at'  => 'datetime',
     ];
@@ -31,6 +32,11 @@ class Banner extends Model
     public function plan()
     {
         return $this->belongsTo(Plan::class, 'plan_id', 'id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id', 'id');
     }
 
     public function getImageFullPathAttribute(): string

@@ -26,6 +26,19 @@ class BranchController extends Controller
     }
 
     /**
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function show(int $id): JsonResponse
+    {
+        $branch = $this->branch->find($id);
+        if (!$branch) {
+            return response()->json(['message' => translate('branch_not_found')], 404);
+        }
+        return response()->json($branch, 200);
+    }
+
+    /**
      * @param Request $request
      * @return JsonResponse
      */

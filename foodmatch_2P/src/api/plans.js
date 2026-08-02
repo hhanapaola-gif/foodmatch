@@ -33,3 +33,5 @@ export const cancelPlanOrder = (id) =>
 export const listPlanCategories = () => client.get('/plan-categories').then((res) => res.data);
 
 export const listBranches = () => client.get('/branch/list').then((res) => res.data);
+
+export const getBranch = (id) => client.get(`/branch/${id}`).then((res) => res.data);

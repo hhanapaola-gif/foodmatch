@@ -5,8 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\CentralLogics\Helpers;
 use App\Http\Controllers\Controller;
 use App\Model\Banner;
-use App\Model\Category;
+use App\Model\Branch;
 use App\Model\Plan;
+use App\Model\PlanCategory;
 use App\Model\Product;
 use App\Traits\UploadSizeHelperTrait;
 use Brian2694\Toastr\Facades\Toastr;
@@ -18,10 +19,11 @@ class BannerController extends Controller
 {
     use UploadSizeHelperTrait;
     public function __construct(
-        private Banner   $banner,
-        private Product  $product,
-        private Category $category,
-        private Plan     $plan,
+        private Banner       $banner,
+        private Product      $product,
+        private PlanCategory $category,
+        private Plan         $plan,
+        private Branch       $branch,
     )
     {}
 
@@ -31,10 +33,14 @@ class BannerController extends Controller
     function index(): Renderable
     {
         $products   = $this->product->orderBy('name')->get();
-        $categories = $this->category->where(['parent_id' => 0])->orderBy('name')->get();
+        // Plan categories, not product/menu categories — this is what a
+        // banner's "category" tap actually needs to filter plans by
+        // (Plan.category_id is a FK to plan_categories, see Plan::category()).
+        $categories = $this->category->active()->orderBy('name')->get();
         $plans      = $this->plan->active()->orderBy('title')->get();
+        $branches   = $this->branch->orderBy('name')->get();
 
-        return view('admin-views.banner.index', compact('products', 'categories', 'plans'));
+        return view('admin-views.banner.index', compact('products', 'categories', 'plans', 'branches'));
     }
 
     /**
@@ -75,10 +81,11 @@ class BannerController extends Controller
         $request->validate([
             'title' => 'required|max:255',
             'image' => 'required|image|max:'. $this->maxImageSizeKB .'|mimes:' . implode(',', array_column(IMAGEEXTENSION, 'key')),
-            'item_type' => 'required|in:product,category,plan',
+            'item_type' => 'required|in:product,category,plan,restaurant',
             'product_id' => 'required_if:item_type,product|exists:products,id',
-            'category_id' => 'required_if:item_type,category|exists:categories,id',
+            'category_id' => 'required_if:item_type,category|exists:plan_categories,id',
             'plan_id' => 'required_if:item_type,plan|exists:plans,id',
+            'branch_id' => 'required_if:item_type,restaurant|exists:branches,id',
         ], [
             'title.max' => translate('Title is too long'),
         ]);
@@ -92,6 +99,8 @@ class BannerController extends Controller
             $banner->category_id = $request->category_id;
         } elseif ($request['item_type'] == 'plan') {
             $banner->plan_id     = $request->plan_id;
+        } elseif ($request['item_type'] == 'restaurant') {
+            $banner->branch_id   = $request->branch_id;
         }
 
         try {
@@ -114,10 +123,11 @@ class BannerController extends Controller
     {
         $products   = $this->product->orderBy('name')->get();
         $banner     = $this->banner->find($id);
-        $categories = $this->category->where(['parent_id' => 0])->orderBy('name')->get();
+        $categories = $this->category->active()->orderBy('name')->get();
         $plans      = $this->plan->active()->orderBy('title')->get();
+        $branches   = $this->branch->orderBy('name')->get();
 
-        return view('admin-views.banner.edit', compact('banner', 'products', 'categories', 'plans'));
+        return view('admin-views.banner.edit', compact('banner', 'products', 'categories', 'plans', 'branches'));
     }
 
     /**
@@ -148,10 +158,11 @@ class BannerController extends Controller
 
         $request->validate([
             'title' => 'required|max:255',
-            'item_type' => 'required|in:product,category,plan',
+            'item_type' => 'required|in:product,category,plan,restaurant',
             'product_id' => 'required_if:item_type,product|exists:products,id',
-            'category_id' => 'required_if:item_type,category|exists:categories,id',
+            'category_id' => 'required_if:item_type,category|exists:plan_categories,id',
             'plan_id' => 'required_if:item_type,plan|exists:plans,id',
+            'branch_id' => 'required_if:item_type,restaurant|exists:branches,id',
             'image' => 'image|max:'. $this->maxImageSizeKB .'|mimes:' . implode(',', array_column(IMAGEEXTENSION, 'key')),
         ], [
             'title.max' => translate('Title is too long!'),
@@ -164,14 +175,22 @@ class BannerController extends Controller
             $banner->product_id  = $request->product_id;
             $banner->category_id = null;
             $banner->plan_id     = null;
+            $banner->branch_id   = null;
         } elseif ($request['item_type'] == 'category') {
             $banner->product_id  = null;
             $banner->category_id = $request->category_id;
             $banner->plan_id     = null;
+            $banner->branch_id   = null;
         } elseif ($request['item_type'] == 'plan') {
             $banner->product_id  = null;
             $banner->category_id = null;
             $banner->plan_id     = $request->plan_id;
+            $banner->branch_id   = null;
+        } elseif ($request['item_type'] == 'restaurant') {
+            $banner->product_id  = null;
+            $banner->category_id = null;
+            $banner->plan_id     = null;
+            $banner->branch_id   = $request->branch_id;
         }
 
         try {

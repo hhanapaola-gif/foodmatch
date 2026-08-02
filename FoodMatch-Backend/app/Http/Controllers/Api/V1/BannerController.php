@@ -21,7 +21,7 @@ class BannerController extends Controller
     public function getBanners(): JsonResponse
     {
         $banners = $this->banner
-            ->with(['product.rating', 'product.branch_product', 'plan.category', 'plan.days', 'plan.branch'])
+            ->with(['product.rating', 'product.branch_product', 'plan.category', 'plan.days', 'plan.branch', 'branch'])
             ->active()
             ->get()
             ->map(function (Banner $banner) {
@@ -33,6 +33,10 @@ class BannerController extends Controller
                 // Embed the full plan shape (not just plan_id) so the mobile app can
                 // navigate straight to the plan detail screen without a second request.
                 $data['plan'] = $banner->plan ? PlanController::formatPlan($banner->plan) : null;
+                // Same idea for restaurant banners: embed the full branch object
+                // (same shape /branch/list returns) so the mobile app can jump
+                // straight to the restaurant screen without a second request.
+                $data['branch'] = $banner->branch ? $banner->branch->toArray() : null;
                 return $data;
             });
 

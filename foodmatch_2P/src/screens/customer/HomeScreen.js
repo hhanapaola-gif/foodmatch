@@ -9,7 +9,7 @@ import BannerCarousel from '../../components/customer/BannerCarousel';
 import Avatar from '../../components/customer/Avatar';
 import { useAuth } from '../../context/customer/AuthContext';
 import { useCart } from '../../context/customer/CartContext';
-import { listPlanCategories, listPlans, listBranches, getPlan } from '../../api/plans';
+import { listPlanCategories, listPlans, listBranches, getPlan, getBranch } from '../../api/plans';
 import { listAddresses } from '../../api/customer';
 import { listBanners } from '../../api/banners';
 import { branchImageUri } from '../../utils/branch';
@@ -89,6 +89,18 @@ export default function HomeScreen({ navigation }) {
       }
     } else if (banner.category_id) {
       navigation.navigate('PlanCategory', { categoryId: banner.category_id });
+    } else if (banner.branch) {
+      // The API embeds the full branch directly on the banner, so this is an
+      // instant local navigation with no network round-trip.
+      navigation.navigate('RestaurantPlans', { restaurant: banner.branch });
+    } else if (banner.branch_id) {
+      // Fallback for older cached responses that only carry the id.
+      try {
+        const restaurant = await getBranch(banner.branch_id);
+        navigation.navigate('RestaurantPlans', { restaurant });
+      } catch {
+        // Ignore: banner points at a restaurant that no longer exists/loads.
+      }
     }
   };
 

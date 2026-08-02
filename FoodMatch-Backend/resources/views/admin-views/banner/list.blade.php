@@ -34,6 +34,7 @@
                                                 <option value="product">{{translate('product')}}</option>
                                                 <option value="category">{{translate('category')}}</option>
                                                 <option value="plan">{{ translate('Plan') }}</option>
+                                                <option value="restaurant">{{ translate('Restaurant') }}</option>
                                             </select>
                                         </div>
                                         <div class="form-group mb-0" id="type-product" style="display:none">
@@ -49,7 +50,7 @@
                                             <label class="input-label">{{translate('category')}} <span class="text-danger ml-1">*</span></label>
                                             <select name="category_id" class="custom-select js-select2-custom" tabindex="4">
                                                 <option selected disabled>{{translate('select_a_category')}}</option>
-                                                @foreach(\App\Model\Category::where('parent_id', 0)->get() as $category)
+                                                @foreach(\App\Model\PlanCategory::active()->orderBy('name')->get() as $category)
                                                     <option value="{{$category['id']}}">{{$category['name']}}</option>
                                                 @endforeach
                                             </select>
@@ -60,6 +61,15 @@
                                                 <option selected disabled>{{ translate('Select a plan') }}</option>
                                                 @foreach(\App\Model\Plan::active()->orderBy('title')->get() as $plan)
                                                     <option value="{{$plan['id']}}">{{$plan['title']}}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="form-group mb-0" id="type-restaurant" style="display:none">
+                                            <label class="input-label">{{ translate('Restaurant') }} <span class="text-danger ml-1">*</span></label>
+                                            <select name="branch_id" class="custom-select js-select2-custom" tabindex="5">
+                                                <option selected disabled>{{ translate('Select a restaurant') }}</option>
+                                                @foreach(\App\Model\Branch::orderBy('name')->get() as $branch)
+                                                    <option value="{{$branch['id']}}">{{$branch['name']}}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -179,11 +189,13 @@
                                             </div>
                                         </td>
                                         @if($banner->category_id)
-                                            <td>{{translate('category')}}: {{substr(\App\Model\Category::find($banner->category_id)?->name, 0, 15)}}</td>
+                                            <td>{{translate('category')}}: {{substr(\App\Model\PlanCategory::find($banner->category_id)?->name, 0, 15)}}</td>
                                         @elseif($banner->product_id)
                                             <td>{{translate('product')}}: {{ substr(\App\Model\Product::find($banner->product_id)?->name,0, 15) }}...</td>
                                         @elseif($banner->plan_id)
                                             <td>{{translate('plan')}}: {{substr(\App\Model\Plan::find($banner->plan_id)?->title, 0, 15)}}</td>
+                                        @elseif($banner->branch_id)
+                                            <td>{{translate('Restaurant')}}: {{substr(\App\Model\Branch::find($banner->branch_id)?->name, 0, 15)}}</td>
                                         @else
                                             <td></td>
                                         @endif
@@ -271,12 +283,15 @@
             $("#type-product").hide();
             $("#type-category").hide();
             $("#type-plan").hide();
+            $("#type-restaurant").hide();
             if (type === 'product') {
                 $("#type-product").show();
             } else if (type === 'category') {
                 $("#type-category").show();
             } else if (type === 'plan') {
                 $("#type-plan").show();
+            } else if (type === 'restaurant') {
+                $("#type-restaurant").show();
             }
         }
 

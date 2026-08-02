@@ -34,6 +34,7 @@
                                                 <option value="product">{{translate('product')}}</option>
                                                 <option value="category">{{translate('category')}}</option>
                                                 <option value="plan" selected>{{ translate('Plan') }}</option>
+                                                <option value="restaurant">{{ translate('Restaurant') }}</option>
                                             </select>
                                         </div>
                                         <div class="form-group mb-0" id="type-product" style="display: none">
@@ -57,6 +58,14 @@
                                             <select name="plan_id" class="form-control js-select2-custom" tabindex="5">
                                                 @foreach($plans as $plan)
                                                     <option value="{{$plan['id']}}">{{$plan['title']}}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="form-group mb-0" id="type-restaurant" style="display: none">
+                                            <label class="input-label">{{ translate('Restaurant') }} <span class="text-danger ml-1">*</span></label>
+                                            <select name="branch_id" class="form-control js-select2-custom" tabindex="5">
+                                                @foreach($branches as $branch)
+                                                    <option value="{{$branch['id']}}">{{$branch['name']}}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -155,12 +164,15 @@
             $("#type-product").hide();
             $("#type-category").hide();
             $("#type-plan").hide();
+            $("#type-restaurant").hide();
             if (type === 'product') {
                 $("#type-product").show();
             } else if (type === 'category') {
                 $("#type-category").show();
             } else if (type === 'plan') {
                 $("#type-plan").show();
+            } else if (type === 'restaurant') {
+                $("#type-restaurant").show();
             }
         }
     </script>
