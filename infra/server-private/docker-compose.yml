@@ -17,8 +17,15 @@ services:
     env_file: ../../FoodMatch-Backend/.env
     environment:
       CONTAINER_ROLE: primary
+    # SHARED volume across both replicas (not storage1/storage2 separate) —
+    # a per-replica volume meant only app1 (the "primary" that runs
+    # `passport:keys`/`passport:client` on boot) ever had working
+    # oauth-public.key/oauth-private.key; requests the LB routed to app2
+    # 500'd with "Key path ... does not exist" (confirmed in the real
+    # deploy). Same issue would've hit uploaded files (product images etc.)
+    # being invisible depending which replica handled the read.
     volumes:
-      - storage1:/var/www/html/storage
+      - storage:/var/www/html/storage
     depends_on:
       mysql:
         condition: service_healthy
@@ -41,7 +48,7 @@ services:
     environment:
       CONTAINER_ROLE: replica
     volumes:
-      - storage2:/var/www/html/storage
+      - storage:/var/www/html/storage
     depends_on:
       mysql:
         condition: service_healthy
@@ -164,8 +171,7 @@ services:
     restart: unless-stopped
 
 volumes:
-  storage1:
-  storage2:
+  storage:
   mysql-data:
   redis-data:
   prometheus-data:
