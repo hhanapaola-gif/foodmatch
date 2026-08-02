@@ -12,8 +12,7 @@ import { useCart } from '../../context/customer/CartContext';
 import { listPlanCategories, listPlans, listBranches, getPlan } from '../../api/plans';
 import { listAddresses } from '../../api/customer';
 import { listBanners } from '../../api/banners';
-
-const RESTAURANT_PLACEHOLDER = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&q=60';
+import { branchImageUri } from '../../utils/branch';
 
 function categoryIcon(name = '') {
   const n = name.toLowerCase();
@@ -210,7 +209,7 @@ export default function HomeScreen({ navigation }) {
                   style={[styles.restaurantCard, { width: `${100 / restaurantColumns - 2}%` }]}
                   onPress={() => navigation.navigate('RestaurantPlans', { restaurant })}
                 >
-                  <Image source={{ uri: RESTAURANT_PLACEHOLDER }} style={styles.restaurantImage} />
+                  <Image source={{ uri: branchImageUri(restaurant) }} style={styles.restaurantImage} />
                   <View style={styles.restaurantInfo}>
                     <Text style={styles.restaurantName}>{restaurant.name}</Text>
                     <Text style={styles.restaurantMeta} numberOfLines={1}>

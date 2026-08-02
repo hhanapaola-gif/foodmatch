@@ -7,8 +7,7 @@ import EmptyState from '../../components/customer/EmptyState';
 import { customerColors, customerFonts, customerFontSizes } from '../../theme/customerTheme';
 import { useColumnCount } from '../../utils/responsive';
 import { listPlansByRestaurant } from '../../api/plans';
-
-const RESTAURANT_PLACEHOLDER = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&q=60';
+import { branchImageUri } from '../../utils/branch';
 
 export default function RestaurantPlansScreen({ route }) {
   const { restaurant } = route.params || {};
@@ -44,7 +43,7 @@ export default function RestaurantPlansScreen({ route }) {
           ListEmptyComponent={<EmptyState icon="nutrition-outline" title="Sin planes disponibles" />}
           ListHeaderComponent={
             <View style={styles.restaurantHeader}>
-              <Image source={{ uri: RESTAURANT_PLACEHOLDER }} style={styles.image} />
+              <Image source={{ uri: branchImageUri(restaurant) }} style={styles.image} />
               <Text style={styles.meta}>{restaurant.address || 'Restaurante socio'}</Text>
               <Text style={styles.sectionTitle}>Planes disponibles</Text>
             </View>
