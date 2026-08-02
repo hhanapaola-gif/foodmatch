@@ -21,7 +21,7 @@ class BranchController extends Controller
      */
     public function list(): JsonResponse
     {
-        $branches = $this->branch->latest()->get();
+        $branches = $this->branch->where('status', 1)->latest()->get();
         return response()->json($branches, 200);
     }
 
@@ -31,7 +31,7 @@ class BranchController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        $branch = $this->branch->find($id);
+        $branch = $this->branch->where('status', 1)->find($id);
         if (!$branch) {
             return response()->json(['message' => translate('branch_not_found')], 404);
         }

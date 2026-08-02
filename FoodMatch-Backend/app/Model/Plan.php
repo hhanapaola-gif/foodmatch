@@ -72,6 +72,10 @@ class Plan extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('is_active', 1);
+        // A plan can't be "active" if the restaurant that offers it was
+        // deactivated — otherwise it keeps showing up (and stays orderable)
+        // in the app after the branch is removed from the Admin panel.
+        return $query->where('is_active', 1)
+            ->whereHas('branch', fn ($q) => $q->where('status', 1));
     }
 }
