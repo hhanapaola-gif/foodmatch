@@ -212,9 +212,8 @@ tiene abierto 22 (a tu IP), 80 y 443 (All IPv4/IPv6).
 - Restringe `/grafana/` con IP allowlist o auth básica adicional en Nginx si
   lo vas a dejar público durante la evaluación.
 - Cambia todas las contraseñas de los `.env.example` — nunca subas los
-  `.env` reales a git. **Ojo**: no hay un `.gitignore` a nivel raíz que
-  excluya `infra/*/.env` — bórralos manualmente después de usarlos o
-  agrega esa regla antes de trabajar aquí con secretos reales.
+  `.env` reales a git (ya hay un `.gitignore` a nivel raíz que excluye
+  `infra/**/.env`).
 - El usuario `exporter` de MySQL tiene permisos de solo lectura
   (`PROCESS, REPLICATION CLIENT, SELECT`), no reutiliza la cuenta root.
 
