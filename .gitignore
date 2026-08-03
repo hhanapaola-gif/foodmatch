@@ -1,0 +1,21 @@
+# Secrets / environment files (each subproject also has its own tighter .gitignore)
+infra/**/.env
+**/.env
+!**/.env.example
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Generic temp/log/backup junk that shouldn't be versioned
+*.log
+*.tmp
+*.bak
+*.orig
+.rnd

@@ -15,5 +15,8 @@ yarn-error.log
 /storage/install.zip
 /storage/update.zip
 /storage/temp/mpdf*
+/storage/tmp/mpdf*
 /storage/fonts/*
 upload_to_r2.php
+error_log
+.rnd
